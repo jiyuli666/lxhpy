@@ -43,12 +43,14 @@ jobs:
 
       - name: Prepare buildozer environment
         run: |
-          # 删除可能存在的旧缓存 SDK 目录
-          rm -rf /home/runner/.buildozer/android/platform/android-sdk
-          # 创建必要的目录结构
-          mkdir -p /home/runner/.buildozer/android/platform
+          # 彻底清理 buildozer 缓存，避免干扰
+          rm -rf /home/runner/.buildozer
           # 创建符号链接指向系统 SDK
+          mkdir -p /home/runner/.buildozer/android/platform
           ln -s /usr/local/lib/android/sdk /home/runner/.buildozer/android/platform/android-sdk
+          # 在系统 SDK 中创建 tools/bin/sdkmanager 符号链接
+          sudo mkdir -p /usr/local/lib/android/sdk/tools/bin
+          sudo ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager /usr/local/lib/android/sdk/tools/bin/sdkmanager
 
       - name: Build with buildozer
         run: |
