@@ -41,22 +41,21 @@ jobs:
           pip install --user cython buildozer
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Prepare buildozer SDK cache
+      - name: Configure system SDK for buildozer
         run: |
-          # 创建 buildozer 期望的 SDK 目录
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk
-          # 复制系统 SDK 所有文件到该目录
-          cp -r /usr/local/lib/android/sdk/* /home/runner/.buildozer/android/platform/android-sdk/
-          # 创建符号链接以满足 buildozer 的路径期望 (tools -> cmdline-tools/latest)
-          cd /home/runner/.buildozer/android/platform/android-sdk
-          ln -s cmdline-tools/latest tools
-          # 创建 NDK 符号链接 (ndk-bundle -> ndk/25.2.9519653)
-          ln -s ndk/25.2.9519653 ndk-bundle
+          # 创建 buildozer 期望的 SDK 路径符号链接
+          mkdir -p /home/runner/.buildozer/android/platform
+          ln -s /usr/local/lib/android/sdk /home/runner/.buildozer/android/platform/android-sdk
+          # 确保 tools/bin/sdkmanager 存在
+          sudo mkdir -p /usr/local/lib/android/sdk/tools/bin
+          sudo ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager /usr/local/lib/android/sdk/tools/bin/sdkmanager
+          # 将 build-tools 路径加入 PATH
+          echo "/usr/local/lib/android/sdk/build-tools/30.0.3" >> $GITHUB_PATH
 
       - name: Build with buildozer
         run: |
-          export ANDROID_HOME=/home/runner/.buildozer/android/platform/android-sdk
-          export ANDROID_SDK_ROOT=/home/runner/.buildozer/android/platform/android-sdk
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
           buildozer -v android debug
 
       - name: Upload APK
