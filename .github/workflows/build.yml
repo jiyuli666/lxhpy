@@ -41,16 +41,14 @@ jobs:
           pip install --user cython buildozer
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Configure system SDK for buildozer
+      - name: Prepare buildozer environment
         run: |
-          # 创建 buildozer 期望的 SDK 路径符号链接
+          # 删除可能存在的旧缓存 SDK 目录
+          rm -rf /home/runner/.buildozer/android/platform/android-sdk
+          # 创建必要的目录结构
           mkdir -p /home/runner/.buildozer/android/platform
+          # 创建符号链接指向系统 SDK
           ln -s /usr/local/lib/android/sdk /home/runner/.buildozer/android/platform/android-sdk
-          # 确保 tools/bin/sdkmanager 存在
-          sudo mkdir -p /usr/local/lib/android/sdk/tools/bin
-          sudo ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager /usr/local/lib/android/sdk/tools/bin/sdkmanager
-          # 将 build-tools 路径加入 PATH
-          echo "/usr/local/lib/android/sdk/build-tools/30.0.3" >> $GITHUB_PATH
 
       - name: Build with buildozer
         run: |
