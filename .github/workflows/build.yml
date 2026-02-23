@@ -41,15 +41,17 @@ jobs:
           pip install --user cython buildozer
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+      - name: Link system SDK to buildozer cache
+        run: |
+          mkdir -p /home/runner/.buildozer/android/platform
+          ln -s /usr/local/lib/android/sdk /home/runner/.buildozer/android/platform/android-sdk
+          # 创建 NDK 链接，使 buildozer 能识别 NDK 版本 25b
+          ln -s /usr/local/lib/android/sdk/ndk/25.2.9519653 /home/runner/.buildozer/android/platform/android-ndk-r25b
+
       - name: Build with buildozer
         run: |
-          # 强制使用本地 SDK，禁止联网下载
           export ANDROID_HOME=/usr/local/lib/android/sdk
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
-          # 创建标识文件，让 buildozer 认为 SDK 已存在
-          mkdir -p /home/runner/.buildozer/android/platform
-          touch /home/runner/.buildozer/android/platform/android-sdk
-          # 开始构建
           buildozer -v android debug
 
       - name: Upload APK
