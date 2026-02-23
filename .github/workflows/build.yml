@@ -19,6 +19,16 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Accept all SDK licenses and install stable build-tools
+        run: |
+          # 自动接受所有许可证
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          # 安装稳定版组件
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platform-tools" \
+            "platforms;android-30" \
+            "build-tools;30.0.3"
+
       - name: Install system dependencies
         run: |
           sudo apt update
