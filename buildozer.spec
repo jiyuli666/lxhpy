@@ -20,4 +20,8 @@ api = 30
 minapi = 21
 ndk = 25b
 build_tools = 30.0.3
+android_sdk_path = /usr/local/lib/android/sdk
 accept_sdk_license = True
+# 禁用自动下载，强制使用本地 SDK
+android.ndk_path = /usr/local/lib/android/sdk/ndk/25.2.9519653
+android.sdk_path = /usr/local/lib/android/sdk
