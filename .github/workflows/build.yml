@@ -41,17 +41,22 @@ jobs:
           pip install --user cython buildozer
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Link system SDK to buildozer cache
+      - name: Prepare buildozer SDK cache
         run: |
-          mkdir -p /home/runner/.buildozer/android/platform
-          ln -s /usr/local/lib/android/sdk /home/runner/.buildozer/android/platform/android-sdk
-          # 创建 NDK 链接，使 buildozer 能识别 NDK 版本 25b
-          ln -s /usr/local/lib/android/sdk/ndk/25.2.9519653 /home/runner/.buildozer/android/platform/android-ndk-r25b
+          # 创建 buildozer 期望的 SDK 目录
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk
+          # 复制系统 SDK 所有文件到该目录
+          cp -r /usr/local/lib/android/sdk/* /home/runner/.buildozer/android/platform/android-sdk/
+          # 创建符号链接以满足 buildozer 的路径期望 (tools -> cmdline-tools/latest)
+          cd /home/runner/.buildozer/android/platform/android-sdk
+          ln -s cmdline-tools/latest tools
+          # 创建 NDK 符号链接 (ndk-bundle -> ndk/25.2.9519653)
+          ln -s ndk/25.2.9519653 ndk-bundle
 
       - name: Build with buildozer
         run: |
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          export ANDROID_HOME=/home/runner/.buildozer/android/platform/android-sdk
+          export ANDROID_SDK_ROOT=/home/runner/.buildozer/android/platform/android-sdk
           buildozer -v android debug
 
       - name: Upload APK
