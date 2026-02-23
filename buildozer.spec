@@ -19,4 +19,5 @@ warn_on_root = 1
 api = 30
 minapi = 21
 ndk = 25b
+build_tools = 30.0.3
 accept_sdk_license = True
