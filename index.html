@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>罗小黑战记辟谣查询</title>
     <style>
-        /* 重置样式 */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
@@ -21,6 +20,7 @@
             flex-direction: column;
             overflow: hidden;
             transition: background-color 0.3s, color 0.3s;
+            position: relative;
         }
 
         body.dark-mode {
@@ -28,11 +28,11 @@
             color: #eee;
         }
 
-        /* 工具栏 */
+        /* 顶部工具栏 */
         .toolbar {
+            padding: 10px 20px;
             display: flex;
             align-items: center;
-            padding: 8px 16px;
             border-bottom: 1px solid #ccc;
             background-color: inherit;
         }
@@ -62,38 +62,39 @@
             background-color: #4e4e4e;
         }
 
-        .btn-download {
+        .download-btn {
             background-color: #2196F3 !important;
             color: white !important;
             margin-left: auto;
         }
 
-        .btn-download:hover {
+        .download-btn:hover {
             background-color: #1976D2 !important;
         }
 
-        .dark-mode .btn-download {
+        .dark-mode .download-btn {
             background-color: #1565C0 !important;
         }
 
-        .btn-category {
+        .category-btn {
             background-color: #ff9800 !important;
             color: white !important;
+            margin-left: 10px;
         }
 
-        .btn-category:hover {
+        .category-btn:hover {
             background-color: #fb8c00 !important;
         }
 
-        /* 主布局 */
-        .main-layout {
-            display: flex;
+        /* 主容器（相对定位，用于侧边栏覆盖） */
+        .main-container {
             flex: 1;
+            display: flex;
             overflow: hidden;
             position: relative;
         }
 
-        /* 侧边栏 */
+        /* 侧边栏（悬浮覆盖） */
         .sidebar {
             position: absolute;
             top: 0;
@@ -104,8 +105,8 @@
             border-right: 1px solid #ccc;
             overflow-y: auto;
             transform: translateX(-100%);
-            transition: transform 0.3s;
-            z-index: 10;
+            transition: transform 0.3s ease;
+            z-index: 20;
         }
 
         .sidebar.visible {
@@ -164,32 +165,62 @@
             background-color: #eaeaea;
         }
 
-        /* 主内容区 */
-        .main-content {
+        /* 遮罩层（点击关闭侧边栏） */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.3);
+            z-index: 15;
+            display: none;
+        }
+
+        .overlay.visible {
+            display: block;
+        }
+
+        /* 主内容区（Flex列布局） */
+        .content-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            padding: 16px 20px;
+            padding: 20px;
             width: 100%;
+        }
+
+        /* 标题和搜索框容器（初始居中） */
+        .center-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease; /* 平滑移动 */
+        }
+
+        /* 主界面时向上微调 5% */
+        .center-wrapper.home-mode {
+            transform: translateY(-5%);
         }
 
         .big-title {
             font-size: 48px;
             font-weight: bold;
+            margin-bottom: 20px;
+            word-wrap: break-word;
             text-align: center;
-            margin: 10px 0 20px;
-            word-break: break-word !important;
         }
 
-        .search-area {
+        .search-wrapper {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
             width: 100%;
         }
 
-        .search-area input {
+        .search-wrapper input {
             width: 60%;
             max-width: 600px;
             padding: 12px 20px;
@@ -202,13 +233,13 @@
             color: #000;
         }
 
-        .dark-mode .search-area input {
+        .dark-mode .search-wrapper input {
             background-color: #2d2d2d;
             color: #fff;
             border-color: #555;
         }
 
-        .search-area button {
+        .search-wrapper button {
             width: 60px;
             background-color: #2196F3;
             color: white;
@@ -221,8 +252,9 @@
             justify-content: center;
         }
 
-        /* 结果盒子 */
+        /* 搜索结果区域 */
         .result-box {
+            display: none; /* 默认隐藏 */
             flex: 1;
             overflow-y: auto;
             background-color: #fff;
@@ -230,6 +262,7 @@
             border-radius: 8px;
             padding: 16px;
             width: 100%;
+            margin-top: 20px;
         }
 
         .dark-mode .result-box {
@@ -246,10 +279,7 @@
             border-radius: 6px;
             cursor: pointer;
             transition: 0.2s;
-            word-break: break-all !important;
-            overflow-wrap: break-word !important;
-            white-space: normal !important;
-            width: 100%;
+            word-break: break-word;
         }
 
         .dark-mode .list-item {
@@ -261,7 +291,7 @@
             background-color: #f0f0f0;
         }
 
-        /* 详情页容器 */
+        /* 详情页 */
         .detail-page {
             height: 100%;
             display: flex;
@@ -272,8 +302,7 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 20px;
-            word-break: break-all !important;
-            overflow-wrap: break-word !important;
+            word-break: break-word;
         }
 
         .detail-content {
@@ -281,22 +310,20 @@
             overflow-y: auto;
             font-size: 16px;
             line-height: 1.6;
-            white-space: pre-wrap !important;
-            word-break: break-all !important;
-            overflow-wrap: break-word !important;
+            white-space: pre-wrap;
+            word-break: break-word;
             margin-bottom: 20px;
-            padding-right: 10px;
         }
 
         .action-bar {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             justify-content: flex-end;
-            margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            padding: 8px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -313,18 +340,25 @@
             color: white;
         }
 
+        .btn-home {
+            background-color: #ff9800;
+            color: white;
+            margin-bottom: 10px;
+        }
+
         .empty-tip {
             text-align: center;
             color: #999;
-            margin-top: 60px;
+            margin-top: 50px;
             font-size: 16px;
         }
 
+        /* 移动端适配 */
         @media (max-width: 800px) {
             .big-title {
                 font-size: 32px;
             }
-            .search-area input {
+            .search-wrapper input {
                 width: 70%;
             }
             .sidebar {
@@ -336,34 +370,39 @@
 <body>
 <div class="toolbar">
     <button id="darkModeBtn">深色模式</button>
-    <button class="btn-download" id="downloadBtn">下载客户端</button>
-</div>
-<div class="toolbar">
-    <button class="btn-category" id="categoryBtn">分类</button>
+    <button class="category-btn" id="categoryBtn">分类</button>
+    <button class="download-btn" id="downloadBtn">下载客户端</button>
 </div>
 
-<div class="main-layout">
+<!-- 遮罩层 -->
+<div class="overlay" id="overlay"></div>
+
+<div class="main-container">
+    <!-- 侧边栏 -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">全部分类</div>
         <div id="categoryContainer"></div>
     </div>
 
-    <div class="main-content">
-        <div class="big-title">罗小黑战记辟谣查询</div>
-        <div class="search-area">
-            <input type="text" id="searchInput" placeholder="输入关键词">
-            <button id="searchBtn">🔍</button>
+    <!-- 主内容区 -->
+    <div class="content-area">
+        <!-- 标题和搜索框容器（初始居中） -->
+        <div class="center-wrapper" id="centerWrapper">
+            <div class="big-title" id="bigTitle">罗小黑战记辟谣查询</div>
+            <div class="search-wrapper">
+                <input type="text" id="searchInput" placeholder="输入关键词">
+                <button id="searchBtn">🔍</button>
+            </div>
         </div>
-        <div class="result-box" id="resultBox">
-            <div class="empty-tip">选择一个分类或输入关键词</div>
-        </div>
+        <!-- 搜索结果区域 -->
+        <div class="result-box" id="resultBox"></div>
     </div>
 </div>
 
 <script>
     (function() {
-        // 数据 (保持完整)
-        const DATA = {
+        // ---------- 辟谣数据 ----------
+        const RUMOR_DATA = {
             "小黑原型相关辟谣": {
                 "弃养谣言（\"从小养的奶猫丢到野外\"\"吃猫血馒头\"）": "小黑原型是2009年5月初出生于木头前公司彼岸天园区（棋乐园小区）的流浪猫，是木头和室友汪汪一起看着长大的，并非从小养的奶猫。2009年12月10日，7个月大的小黑因在户外主动亲近人类，被汪汪和木头抓回家，但小黑在室内极度怕人，刚到家躲在床底，后逃窜到储物间，终日不见阳光，仅在夜晚活动，一个月后才拍到第一张照片。小黑虽被绝育，但始终向往户外，频繁挠门嚎叫、破坏窗纱逃跑，还跑到邻居家拉屎，导致被打至眼睛内出血、瞳孔变色，存在高空坠落和人类攻击风险。木头等人当时咨询了宠物医生和流浪猫救助机构，救助机构表示这类极度怕人的流浪猫很难被领养，常规做法是绝育后放归，而木头等人起初无法接受放归，尝试将小黑关在阳台，但小黑依旧焦躁不安，甚至试图从阳台屋顶逃跑。意识到将小黑关在室内并非保护而是囚禁，无法保证其安全和自由，遂于2010年7月2日将其放回棋乐园（原生地），并非\"丢到野外\"。罗小黑战记于2011年3月17日上线，是木头为纪念未能与小黑成为家人的遗憾而制作，并非\"吃猫血馒头\"。动画前十年靠木头接外包和卖周边维持收支，直至2020年才实现盈利。木头从未隐瞒此事，反而多次主动提及，且后续持续参与流浪猫救助：个人救助送养7只猫，其中包括2009年9月捡到的亲人猫咪罗宾，以及小黑与罗宾的孩子小贱（因胆小怕人未被领养，自留抚养）；公司同事累计领养50多只流浪猫，团队还负担流浪猫公益绝育费用、合作领养活动，践行\"领养代替购买\"理念，仅2020-2025年期间，团队资助的流浪猫绝育数量就超过200只。",
                 "二次丢猫谣言（\"小黑跑回家后被开车丢到燕郊\"）": "该谣言完全不实。首先，小黑放归时间为2010年7月2日，而木头学车时间是2011年3月22日，该时间有木头当时的微博记录为证，放归时木头尚未学车，不可能开车丢猫。其次，谣言中\"小黑跑回家\"的相关描述，实际是2011年11月5日\"罗小黑CAT\"账号分享第一批周边玩偶打样的漫画互动，图中\"小黑\"是玩偶，并非真实猫咪，第一批玩偶共制作了500只，2012年1月便基本售空，剩余的少量玩偶后续也赠送给了粉丝，并未被丢弃。最后，燕郊是木头和室友2011年7月搬家后的定居地点，是三人从天通苑搬到燕郊，并非\"把猫从天通苑丢到燕郊\"，不存在\"二次丢猫\"的行为，且放归后前同事仍在棋乐园园区多次看到小黑，并持续投喂，小黑在园区内生活状态稳定。",
@@ -404,9 +443,9 @@
 
         // 扁平化
         const flatItems = [];
-        for (const cat in DATA) {
-            for (const title in DATA[cat]) {
-                flatItems.push({ cat, title, content: DATA[cat][title] });
+        for (const cat in RUMOR_DATA) {
+            for (const title in RUMOR_DATA[cat]) {
+                flatItems.push({ cat, title, content: RUMOR_DATA[cat][title] });
             }
         }
 
@@ -415,30 +454,46 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const categoryBtn = document.getElementById('categoryBtn');
         const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
         const categoryContainer = document.getElementById('categoryContainer');
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
         const resultBox = document.getElementById('resultBox');
+        const bigTitle = document.getElementById('bigTitle');
+        const centerWrapper = document.getElementById('centerWrapper');
 
-        let dark = false;
+        let darkMode = false;
         let lastSearchResults = [];
         let lastKeyword = '';
 
-        function toggleDark() {
-            dark = !dark;
-            document.body.classList.toggle('dark-mode', dark);
-            darkModeBtn.textContent = dark ? '浅色模式' : '深色模式';
+        // ---------- 深色模式 ----------
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark-mode', darkMode);
+            darkModeBtn.textContent = darkMode ? '浅色模式' : '深色模式';
         }
-        darkModeBtn.addEventListener('click', toggleDark);
+        darkModeBtn.addEventListener('click', toggleDarkMode);
 
-        function toggleSidebar() {
-            sidebar.classList.toggle('visible');
+        // ---------- 侧边栏 ----------
+        function toggleSidebar(show) {
+            if (show === undefined) {
+                sidebar.classList.toggle('visible');
+                overlay.classList.toggle('visible');
+            } else if (show) {
+                sidebar.classList.add('visible');
+                overlay.classList.add('visible');
+            } else {
+                sidebar.classList.remove('visible');
+                overlay.classList.remove('visible');
+            }
         }
-        categoryBtn.addEventListener('click', toggleSidebar);
+        categoryBtn.addEventListener('click', () => toggleSidebar());
+        overlay.addEventListener('click', () => toggleSidebar(false));
 
+        // 构建侧边栏
         function buildSidebar() {
             categoryContainer.innerHTML = '';
-            for (const cat in DATA) {
+            for (const cat in RUMOR_DATA) {
                 const catDiv = document.createElement('div');
                 catDiv.className = 'category-item';
                 catDiv.textContent = cat;
@@ -450,14 +505,15 @@
 
                 const subUl = document.createElement('ul');
                 subUl.className = 'subcategory-list';
-                for (const title in DATA[cat]) {
+                for (const title in RUMOR_DATA[cat]) {
                     const li = document.createElement('li');
                     li.className = 'subcategory-item';
                     li.textContent = title;
                     li.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        showDetail(title, DATA[cat][title]);
-                        if (window.innerWidth <= 800) sidebar.classList.remove('visible');
+                        showDetail(title, RUMOR_DATA[cat][title]);
+                        toggleSidebar(false);
+                        if (window.innerWidth <= 800) toggleSidebar(false);
                     });
                     subUl.appendChild(li);
                 }
@@ -465,82 +521,119 @@
             }
         }
 
+        // ---------- 主界面切换 ----------
+        function showHome() {
+            // 显示标题，隐藏结果框，恢复centerWrapper占满，并添加上移类
+            bigTitle.style.display = 'block';
+            resultBox.style.display = 'none';
+            centerWrapper.style.flex = '1';
+            centerWrapper.classList.add('home-mode');
+            lastSearchResults = [];
+            lastKeyword = '';
+        }
+
+        function showSearchMode() {
+            // 隐藏标题，显示结果框，centerWrapper收缩，移除上移类
+            bigTitle.style.display = 'none';
+            resultBox.style.display = 'block';
+            centerWrapper.style.flex = '0';
+            centerWrapper.classList.remove('home-mode');
+        }
+
+        // 清空结果
+        function clearResult() {
+            resultBox.innerHTML = '';
+        }
+
+        // 显示搜索结果列表
+        function showSearchResults(results, keyword) {
+            lastSearchResults = results;
+            lastKeyword = keyword;
+            showSearchMode();
+            clearResult();
+            if (!results.length) {
+                resultBox.innerHTML = `<div class="empty-tip">未找到“${keyword}”相关的内容</div>`;
+                return;
+            }
+
+            // 返回主页按钮
+            const homeBtn = document.createElement('button');
+            homeBtn.className = 'btn btn-home';
+            homeBtn.textContent = '返回主页';
+            homeBtn.style.marginBottom = '10px';
+            homeBtn.addEventListener('click', showHome);
+            resultBox.appendChild(homeBtn);
+
+            results.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.textContent = item.title;
+                div.addEventListener('click', () => showDetail(item.title, item.content));
+                resultBox.appendChild(div);
+            });
+        }
+
+        // 显示详情
         function showDetail(title, content) {
-            resultBox.innerHTML = `
-                <div class="detail-page">
-                    <div class="detail-title">${title}</div>
-                    <div class="detail-content">${content}</div>
-                    <div class="action-bar">
-                        <button class="btn btn-back" id="backBtn">返回</button>
-                        <button class="btn btn-copy" id="copyBtn">复制文本</button>
-                    </div>
+            clearResult();
+            const detailDiv = document.createElement('div');
+            detailDiv.className = 'detail-page';
+            detailDiv.innerHTML = `
+                <div class="detail-title">${title}</div>
+                <div class="detail-content">${content}</div>
+                <div class="action-bar">
+                    <button class="btn btn-back" id="backFromDetail">返回</button>
+                    <button class="btn btn-copy" id="copyDetail">复制文本</button>
                 </div>
             `;
-            document.getElementById('backBtn').addEventListener('click', () => {
+            resultBox.appendChild(detailDiv);
+            document.getElementById('backFromDetail').addEventListener('click', () => {
                 if (lastSearchResults.length) {
                     showSearchResults(lastSearchResults, lastKeyword);
                 } else {
-                    resultBox.innerHTML = '<div class="empty-tip">选择一个分类或输入关键词</div>';
+                    showHome();
                 }
             });
-            document.getElementById('copyBtn').addEventListener('click', () => {
+            document.getElementById('copyDetail').addEventListener('click', () => {
                 navigator.clipboard.writeText(content).then(() => {
-                    const btn = document.getElementById('copyBtn');
+                    const btn = document.getElementById('copyDetail');
                     btn.textContent = '已复制！';
                     setTimeout(() => btn.textContent = '复制文本', 1500);
                 });
             });
         }
 
-        function showSearchResults(results, keyword) {
-            lastSearchResults = results;
-            lastKeyword = keyword;
-            if (!results.length) {
-                resultBox.innerHTML = `<div class="empty-tip">未找到“${keyword}”相关的内容</div>`;
+        // 搜索
+        function performSearch() {
+            const keyword = searchInput.value.trim();
+            if (!keyword) {
+                showHome();
                 return;
             }
-            resultBox.innerHTML = ''; // 清空
-            results.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.textContent = item.title;
-                div.addEventListener('click', () => {
-                    showDetail(item.title, item.content);
-                });
-                resultBox.appendChild(div);
-            });
-        }
-
-        function doSearch() {
-            const keyword = searchInput.value.trim();
-            if (!keyword) return;
             const kw = keyword.toLowerCase();
             const results = flatItems.filter(item =>
                 item.title.toLowerCase().includes(kw) || item.content.toLowerCase().includes(kw)
             );
             showSearchResults(results, keyword);
         }
-        searchBtn.addEventListener('click', doSearch);
+        searchBtn.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') doSearch();
+            if (e.key === 'Enter') performSearch();
         });
 
+        // 下载客户端（版本1.1）
         downloadBtn.addEventListener('click', () => {
             const link = document.createElement('a');
-            link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/LuoXiaoHeiChecker-1.0.3-win64.msi';
-            link.download = 'LuoXiaoHeiChecker-1.0.3-win64.msi';
+            link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/LuoXiaoHeiChecker-1.1-win64.msi';
+            link.download = 'LuoXiaoHeiChecker-1.1-win64.msi';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         });
 
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 800 && sidebar.classList.contains('visible') && !sidebar.contains(e.target) && e.target !== categoryBtn) {
-                sidebar.classList.remove('visible');
-            }
-        });
-
+        // 初始化
         buildSidebar();
+        showHome();
     })();
 </script>
 </body>
