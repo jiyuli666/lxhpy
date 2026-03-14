@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    
+    <!-- 浏览器标签图标 (favicon.ico 需与 HTML 同目录) -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- iOS 主屏幕配置 (若需图标，请将 apple-touch-icon.png 放至同目录) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="罗小黑辟谣">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png"> <!-- 180x180 PNG，可替换 -->
+    
     <title>罗小黑战记辟谣查询</title>
     <style>
         * {
@@ -12,7 +22,7 @@
         }
 
         body {
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #f5f5f5;
             color: #222;
             height: 100vh;
@@ -198,6 +208,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            transition: flex 0.2s;
         }
 
         .big-title {
@@ -314,6 +325,7 @@
             gap: 10px;
             justify-content: flex-end;
             flex-wrap: wrap;
+            padding-bottom: 10px; /* 确保按钮不贴底 */
         }
 
         .btn {
@@ -357,6 +369,9 @@
             }
             .sidebar {
                 width: 240px;
+            }
+            .detail-content {
+                max-height: none; /* 确保可滚动 */
             }
         }
     </style>
@@ -517,7 +532,6 @@
 
         // ---------- 主界面切换 ----------
         function showHome() {
-            // 显示标题，隐藏结果框，恢复centerWrapper占满
             bigTitle.style.display = 'block';
             resultBox.style.display = 'none';
             centerWrapper.style.flex = '1';
@@ -526,13 +540,11 @@
         }
 
         function showSearchMode() {
-            // 隐藏标题，显示结果框，centerWrapper收缩
             bigTitle.style.display = 'none';
             resultBox.style.display = 'block';
             centerWrapper.style.flex = '0';
         }
 
-        // 清空结果
         function clearResult() {
             resultBox.innerHTML = '';
         }
@@ -548,7 +560,6 @@
                 return;
             }
 
-            // 返回主页按钮
             const homeBtn = document.createElement('button');
             homeBtn.className = 'btn btn-home';
             homeBtn.textContent = '返回主页';
@@ -567,7 +578,6 @@
 
         // 显示详情
         function showDetail(title, content) {
-            // 进入详情前先切换到搜索模式（隐藏标题，搜索框上浮）
             showSearchMode();
             clearResult();
             const detailDiv = document.createElement('div');
