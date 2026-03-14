@@ -198,12 +198,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: transform 0.3s ease; /* 平滑移动 */
-        }
-
-        /* 主界面时向上微调 5% */
-        .center-wrapper.home-mode {
-            transform: translateY(-5%);
         }
 
         .big-title {
@@ -523,21 +517,19 @@
 
         // ---------- 主界面切换 ----------
         function showHome() {
-            // 显示标题，隐藏结果框，恢复centerWrapper占满，并添加上移类
+            // 显示标题，隐藏结果框，恢复centerWrapper占满
             bigTitle.style.display = 'block';
             resultBox.style.display = 'none';
             centerWrapper.style.flex = '1';
-            centerWrapper.classList.add('home-mode');
             lastSearchResults = [];
             lastKeyword = '';
         }
 
         function showSearchMode() {
-            // 隐藏标题，显示结果框，centerWrapper收缩，移除上移类
+            // 隐藏标题，显示结果框，centerWrapper收缩
             bigTitle.style.display = 'none';
             resultBox.style.display = 'block';
             centerWrapper.style.flex = '0';
-            centerWrapper.classList.remove('home-mode');
         }
 
         // 清空结果
@@ -575,6 +567,8 @@
 
         // 显示详情
         function showDetail(title, content) {
+            // 进入详情前先切换到搜索模式（隐藏标题，搜索框上浮）
+            showSearchMode();
             clearResult();
             const detailDiv = document.createElement('div');
             detailDiv.className = 'detail-page';
@@ -621,11 +615,11 @@
             if (e.key === 'Enter') performSearch();
         });
 
-        // 下载客户端（版本1.1）
+        // 下载客户端（指向 EXE 文件，版本 1.1.1）
         downloadBtn.addEventListener('click', () => {
             const link = document.createElement('a');
-            link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/LuoXiaoHeiChecker-1.1-win64.msi';
-            link.download = 'LuoXiaoHeiChecker-1.1-win64.msi';
+            link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/LuoXiaoHeiChecker-1.1.1-win64.exe';
+            link.download = 'LuoXiaoHeiChecker-1.1.1-win64.exe';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
