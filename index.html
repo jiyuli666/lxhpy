@@ -625,11 +625,11 @@
             if (e.key === 'Enter') performSearch();
         });
 
-        // 下载客户端（指向 EXE 文件，版本 1.1.1）
+        // 下载客户端（指向 EXE 文件，版本 1.2）
         downloadBtn.addEventListener('click', () => {
             const link = document.createElement('a');
-            link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/LuoXiaoHeiChecker-1.1.1-win64.exe';
-            link.download = 'LuoXiaoHeiChecker-1.1.1-win64.exe';
+            link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/LuoXiaoHeiChecker-1.2-win64.exe';
+            link.download = 'LuoXiaoHeiChecker-1.2-win64.exe';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
