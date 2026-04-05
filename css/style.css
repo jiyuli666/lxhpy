@@ -433,7 +433,8 @@ mark {
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    padding-top: 10vh;
 }
 
 .modal.show {
@@ -442,11 +443,13 @@ mark {
 
 .modal-content {
     background-color: #fff;
-    border-radius: 8px;
+    border-radius: 12px;
     width: 90%;
     max-width: 400px;
+    max-height: 80vh;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     animation: modalFadeIn 0.3s ease;
+    overflow-y: auto;
 }
 
 .dark-mode .modal-content {
@@ -556,9 +559,15 @@ mark {
 }
 
 @media (max-width: 480px) {
+    .modal {
+        padding-top: 5vh;
+        align-items: flex-start;
+    }
+    
     .modal-content {
         width: 95%;
         margin: 10px;
+        max-height: 70vh;
     }
     
     .modal-header {
@@ -567,6 +576,7 @@ mark {
     
     .modal-body {
         padding: 16px;
+        gap: 8px;
     }
     
     .platform-btn {
