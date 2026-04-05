@@ -50,6 +50,11 @@
         elements.bigTitle = document.getElementById('bigTitle');
         elements.centerWrapper = document.getElementById('centerWrapper');
         elements.loading = document.getElementById('loading');
+        elements.downloadModal = document.getElementById('downloadModal');
+        elements.closeModal = document.getElementById('closeModal');
+        elements.downloadWindows = document.getElementById('downloadWindows');
+        elements.downloadAndroid = document.getElementById('downloadAndroid');
+        elements.addIOS = document.getElementById('addIOS');
         
         // 创建搜索历史容器
         createSearchHistoryContainer();
@@ -352,14 +357,42 @@
         }, 100);
     }
     
-    // 下载客户端
-    function downloadClient() {
+    // 显示下载弹窗
+    function showDownloadModal() {
+        elements.downloadModal.classList.add('show');
+    }
+    
+    // 隐藏下载弹窗
+    function hideDownloadModal() {
+        elements.downloadModal.classList.remove('show');
+    }
+    
+    // 下载Windows版本
+    function downloadWindowsVersion() {
         const link = document.createElement('a');
         link.href = 'https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.2.2-win64.exe';
         link.download = 'LuoXiaoHeiChecker-1.2.2-win64.exe';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        hideDownloadModal();
+    }
+    
+    // 下载Android版本
+    function downloadAndroidVersion() {
+        const link = document.createElement('a');
+        link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/%E7%BD%97%E5%B0%8F%E9%BB%91%E8%BE%9F%E8%B0%A3%E6%9F%A5%E8%AF%A2.apk';
+        link.download = '罗小黑辟谣查询.apk';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        hideDownloadModal();
+    }
+    
+    // 下载iOS版本
+    function downloadIOSVersion() {
+        alert('请点击浏览器底部的分享按钮，选择"添加到主屏幕"');
+        hideDownloadModal();
     }
     
     // ---------- 事件监听 ----------
@@ -405,24 +438,48 @@
             }, 200);
         });
         
-        // 下载按钮
-        elements.downloadBtn.addEventListener('click', downloadClient);
+        // 下载按钮 - 显示下载弹窗
+        elements.downloadBtn.addEventListener('click', showDownloadModal);
+        
+        // 关闭弹窗按钮
+        elements.closeModal.addEventListener('click', hideDownloadModal);
+        
+        // Windows下载按钮
+        elements.downloadWindows.addEventListener('click', downloadWindowsVersion);
+        
+        // Android下载按钮
+        elements.downloadAndroid.addEventListener('click', downloadAndroidVersion);
+        
+        // iOS下载按钮
+        elements.addIOS.addEventListener('click', downloadIOSVersion);
         
         // 键盘导航支持
         document.addEventListener('keydown', (e) => {
-            // ESC键返回主页
+            // ESC键返回主页或关闭弹窗
             if (e.key === 'Escape') {
-                showHome();
-                hideSearchHistory();
-                elements.searchInput.blur();
+                // 如果弹窗显示，则关闭弹窗
+                if (elements.downloadModal.classList.contains('show')) {
+                    hideDownloadModal();
+                } else {
+                    showHome();
+                    hideSearchHistory();
+                    elements.searchInput.blur();
+                }
             }
         });
         
-        // 点击页面其他地方隐藏搜索历史
+        // 点击页面其他地方隐藏搜索历史和关闭弹窗
         document.addEventListener('click', (e) => {
+            // 隐藏搜索历史
             if (!elements.searchInput.contains(e.target) && 
                 !elements.searchHistory.contains(e.target)) {
                 hideSearchHistory();
+            }
+            
+            // 点击弹窗外部关闭弹窗
+            if (elements.downloadModal.contains(e.target) && 
+                !elements.downloadModal.querySelector('.modal-content').contains(e.target)) {
+                hideDownloadModal();
             }
         });
     }
