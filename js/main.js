@@ -504,8 +504,8 @@
     // 下载Windows版本
     function downloadWindowsVersion() {
         const link = document.createElement('a');
-        link.href = 'https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.3-win64.exe';
-        link.download = 'LuoXiaoHeiChecker-1.3-win64.exe';
+        link.href = 'https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.3.2-win64.exe';
+        link.download = 'LuoXiaoHeiChecker-1.3.2-win64.exe';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
