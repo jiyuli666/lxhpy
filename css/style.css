@@ -52,7 +52,39 @@ body.dark-mode {
 }
 
 .dark-mode .toolbar button:hover {
-    background-color: #4e4e4e;
+    background-color: #555;
+}
+
+/* 语言选择器 */
+.language-select {
+    padding: 6px 12px;
+    background-color: #e0e0e0;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #000;
+    transition: 0.2s;
+    margin-right: 10px;
+}
+
+.language-select:hover {
+    background-color: #d0d0d0;
+}
+
+.dark-mode .language-select {
+    background-color: #3e3e3e;
+    color: #fff;
+    border-color: #555;
+}
+
+.dark-mode .language-select:hover {
+    background-color: #555;
+}
+
+.language-select:focus {
+    outline: 2px solid #2196F3;
+    outline-offset: 2px;
 }
 
 .download-btn {
