@@ -6,7 +6,6 @@ options:
   createIntermediateGroups: true
   xcodeVersion: "15.0"
   projectFormat: xcode13
-  createIntermediateGroups: true
 settings:
   base:
     SWIFT_VERSION: "5.0"
@@ -14,24 +13,35 @@ settings:
     CODE_SIGN_STYLE: Automatic
     CODE_SIGNING_ALLOWED: NO
     CODE_SIGNING_REQUIRED: NO
-    CODE_SIGN_ENTITLEMENTS: LuoXiaoHei/LuoXiaoHei.entitlements
     ENABLE_BITCODE: NO
     GENERATE_INFOPLIST_FILE: NO
     INFOPLIST_FILE: LuoXiaoHei/Info.plist
+    INFOPLIST_KEY_CFBundleDisplayName: 罗小黑战记辟谣查询
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     TARGETED_DEVICE_FAMILY: "1,2"
     SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+    DEVELOPMENT_ASSET_PATHS: "\"LuoXiaoHei/Preview Content\""
     ENABLE_PREVIEWS: YES
 targets:
   LuoXiaoHei:
     type: application
     platform: iOS
     sources:
-      - path: LuoXiaoHei/Sources
-      - path: LuoXiaoHei/Resources
+      - path: LuoXiaoHei
         excludes:
-          - "README.md"
+          - "Info.plist"
+          - "LuoXiaoHei.entitlements"
+          - "Resources"
+          - "Assets.xcassets"
+          - "Preview Content"
+          - "*.json"
+          - "*.jpg"
+          - "*.jpeg"
+          - "*.png"
+          - "*.gif"
+          - "*.bmp"
+          - "*.md"
     resources:
       - path: LuoXiaoHei/Resources
       - path: LuoXiaoHei/Assets.xcassets
@@ -48,4 +58,3 @@ targets:
       MARKETING_VERSION: "1.3.4"
       CURRENT_PROJECT_VERSION: "1"
       SWIFT_OBJC_INTERFACE_HEADER_NAME: ""
-      DEVELOPMENT_ASSET_PATHS: "\"LuoXiaoHei/Preview Content\""
