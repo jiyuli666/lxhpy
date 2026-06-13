@@ -1,0 +1,48 @@
+name: LuoXiaoHei
+options:
+  bundleIdPrefix: com.lxhpy
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGN_ENTITLEMENTS: LuoXiaoHei/LuoXiaoHei.entitlements
+    ENABLE_BITCODE: NO
+    GENERATE_INFOPLIST_FILE: NO
+    INFOPLIST_FILE: LuoXiaoHei/Info.plist
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    TARGETED_DEVICE_FAMILY: "1,2"
+    SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+    ENABLE_PREVIEWS: YES
+targets:
+  LuoXiaoHei:
+    type: application
+    platform: iOS
+    sources:
+      - path: LuoXiaoHei/Sources
+      - path: LuoXiaoHei/Resources
+        excludes:
+          - "README.md"
+    resources:
+      - path: LuoXiaoHei/Resources
+      - path: LuoXiaoHei/Assets.xcassets
+      - path: LuoXiaoHei/Preview Content
+    info:
+      path: LuoXiaoHei/Info.plist
+    entitlements:
+      path: LuoXiaoHei/LuoXiaoHei.entitlements
+      properties:
+        com.apple.security.network.client: true
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.lxhpy.luoxiaohei
+      PRODUCT_NAME: LuoXiaoHei
+      MARKETING_VERSION: "1.3.4"
+      CURRENT_PROJECT_VERSION: "1"
+      SWIFT_OBJC_INTERFACE_HEADER_NAME: ""
+      DEVELOPMENT_ASSET_PATHS: "\"LuoXiaoHei/Preview Content\""
