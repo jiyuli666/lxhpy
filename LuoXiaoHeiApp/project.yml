@@ -4,6 +4,9 @@ options:
   deploymentTarget:
     iOS: "15.0"
   createIntermediateGroups: true
+  xcodeVersion: "15.0"
+  projectFormat: xcode13
+  createIntermediateGroups: true
 settings:
   base:
     SWIFT_VERSION: "5.0"
