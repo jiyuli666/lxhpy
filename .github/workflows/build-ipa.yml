@@ -1,0 +1,75 @@
+name: Build iOS IPA
+
+# 只要推送到 main/master 分支或打 tag 就自动打包；你也可以手动在 Actions 页点 Run workflow
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: LuoXiaoHeiApp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install xcodegen
+        run: brew install xcodegen || true
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (arm64 iOS) → unsigned .app
+        run: |
+          xcodebuild \
+            -project LuoXiaoHei.xcodeproj \
+            -scheme LuoXiaoHei \
+            -configuration Release \
+            -sdk iphoneos \
+            -arch arm64 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            ENABLE_BITCODE=NO \
+            build \
+            ONLY_ACTIVE_ARCH=NO \
+            -derivedDataPath "$PWD/DerivedData" \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Package into Payload / .ipa
+        run: |
+          APP="$PWD/DerivedData/Build/Products/Release-iphoneos/LuoXiaoHei.app"
+          ls -la "$APP"
+          mkdir -p Package/Payload
+          cp -R "$APP" Package/Payload/
+          cd Package
+          # zip -r 生成标准 ipa（无签名）
+          zip -qr ../LuoXiaoHei.ipa .
+          cd ..
+          ls -la LuoXiaoHei.ipa
+          echo "::set-output name=ipa_path::$PWD/LuoXiaoHei.ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuoXiaoHei-IPA
+          path: LuoXiaoHeiApp/LuoXiaoHei.ipa
+          retention-days: 30
+
+      - name: Upload debug logs if failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: LuoXiaoHeiApp/DerivedData/Logs/Build/*.xcactivitylog
+          retention-days: 14
