@@ -1,6 +1,5 @@
 name: Build iOS IPA
 
-# 只要推送到 main/master 分支或打 tag 就自动打包；你也可以手动在 Actions 页点 Run workflow
 on:
   push:
     branches: [ main, master ]
@@ -19,17 +18,79 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show Xcode version
-        run: xcodebuild -version
-
-      - name: Install xcodegen
-        run: brew install xcodegen || true
-
-      - name: Generate Xcode project
-        run: xcodegen generate
-
-      - name: Build (arm64 iOS) → unsigned .app
+      - name: Step 1 - 检查所有源文件和资源文件是否存在
         run: |
+          echo "== 1A. 工作目录和内容 =="
+          pwd
+          echo ""
+          ls -la
+          echo ""
+          echo "== 1B. LuoXiaoHei 目录内容 =="
+          ls -la LuoXiaoHei/
+          echo ""
+          echo "== 1C. Sources/ 里的 Swift 文件 =="
+          if [ -d "LuoXiaoHei/Sources" ]; then
+            echo "目录存在，文件数: $(ls LuoXiaoHei/Sources/*.swift 2>/dev/null | wc -l)"
+            ls -la LuoXiaoHei/Sources/
+          else
+            echo "⚠️ Sources 目录不存在！"
+          fi
+          echo ""
+          echo "== 1D. Resources/ 资源文件（关键！需要 48 个文件） =="
+          if [ -d "LuoXiaoHei/Resources" ]; then
+            echo "目录存在"
+            FILE_COUNT=$(ls LuoXiaoHei/Resources/ | wc -l | tr -d ' ')
+            echo "文件数量: $FILE_COUNT"
+            du -sh LuoXiaoHei/Resources/
+            echo ""
+            echo "前 10 个文件:"
+            ls -lh LuoXiaoHei/Resources/ | head -10
+            echo ""
+            echo "按类型统计:"
+            for ext in jpg png json md; do
+              COUNT=$(ls LuoXiaoHei/Resources/*.$ext 2>/dev/null | wc -l | tr -d ' ')
+              echo "  .$ext: $COUNT 个"
+            done
+          else
+            echo "⚠️ Resources 目录不存在！"
+          fi
+          echo ""
+          echo "== 1E. AppDelegate.swift =="
+          ls -lh LuoXiaoHei/AppDelegate.swift 2>/dev/null || echo "⚠️ 不存在"
+          echo ""
+          echo "== 1F. Info.plist =="
+          ls -lh LuoXiaoHei/Info.plist 2>/dev/null || echo "⚠️ 不存在"
+          echo ""
+          echo "== 1G. Assets.xcassets/AppIcon.appiconset =="
+          if [ -d "LuoXiaoHei/Assets.xcassets/AppIcon.appiconset" ]; then
+            echo "目录存在，文件数: $(ls LuoXiaoHei/Assets.xcassets/AppIcon.appiconset/ | wc -l | tr -d ' ')"
+            ls LuoXiaoHei/Assets.xcassets/AppIcon.appiconset/
+          else
+            echo "⚠️ AppIcon 目录不存在"
+          fi
+
+      - name: Step 2 - 显示 Xcode 和 xcodegen 版本
+        run: |
+          echo "== Xcode 版本 =="
+          xcodebuild -version
+          echo ""
+          echo "== 安装 xcodegen =="
+          brew install xcodegen || true
+          echo ""
+          echo "== xcodegen 版本 =="
+          xcodegen --version || echo "xcodegen 未安装"
+
+      - name: Step 3 - 生成 Xcode 项目
+        run: |
+          echo "== 正在生成 Xcode 项目 =="
+          xcodegen generate
+          echo ""
+          echo "== 生成后的项目文件 =="
+          ls -la LuoXiaoHei.xcodeproj/
+
+      - name: Step 4 - 构建 iOS 应用 (arm64, 无签名)
+        run: |
+          echo "== 开始构建 =="
           xcodebuild \
             -project LuoXiaoHei.xcodeproj \
             -scheme LuoXiaoHei \
@@ -44,32 +105,85 @@ jobs:
             build \
             ONLY_ACTIVE_ARCH=NO \
             -derivedDataPath "$PWD/DerivedData" \
-            | xcpretty && exit ${PIPESTATUS[0]}
+            2>&1 | tee build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
+          echo ""
+          echo "== 构建退出码: $BUILD_EXIT =="
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo ""
+            echo "== 构建失败！最后 80 行日志 =="
+            tail -80 build.log
+            exit $BUILD_EXIT
+          fi
+          echo "构建成功！"
 
-      - name: Package into Payload / .ipa
+      - name: Step 5 - 检查 .app 包内容（确认资源是否被打入）
         run: |
-          APP="$PWD/DerivedData/Build/Products/Release-iphoneos/LuoXiaoHei.app"
-          ls -la "$APP"
+          APP_DIR="$PWD/DerivedData/Build/Products/Release-iphoneos/LuoXiaoHei.app"
+          echo "== 应用包路径: $APP_DIR =="
+          echo ""
+          echo "== 应用包大小 =="
+          du -sh "$APP_DIR"
+          echo ""
+          echo "== 包内文件数量 =="
+          find "$APP_DIR" -type f | wc -l
+          echo ""
+          echo "== 包内所有文件列表 =="
+          find "$APP_DIR" -type f -print0 | xargs -0 ls -lh | head -80
+          echo ""
+          echo "== 包内 jpg/png 文件 =="
+          find "$APP_DIR" $ -name "*.jpg" -o -name "*.png" $ -type f -exec ls -lh {} \;
+          echo ""
+          echo "== 包内 json 文件 =="
+          find "$APP_DIR" -name "*.json" -type f -exec ls -lh {} \;
+          echo ""
+          echo "== 汇总: .app 包总大小 =="
+          du -sh "$APP_DIR"
+          echo ""
+          if [ ! -f "$APP_DIR/rumor_data.json" ] && [ ! -f "$APP_DIR/zh_cn.json" ]; then
+            echo "⚠️ 警告：包内找不到 JSON 数据文件！Resources 目录内容未被打包"
+          else
+            echo "✅ JSON 数据文件已在包内"
+          fi
+          IMAGE_COUNT=$(find "$APP_DIR" $ -name "*.jpg" -o -name "*.png" $ -type f | wc -l | tr -d ' ')
+          echo "包内图片文件数量: $IMAGE_COUNT"
+
+      - name: Step 6 - 打包成 IPA
+        run: |
+          APP_DIR="$PWD/DerivedData/Build/Products/Release-iphoneos/LuoXiaoHei.app"
+          echo "== 开始打包 IPA =="
+          rm -rf Package
           mkdir -p Package/Payload
-          cp -R "$APP" Package/Payload/
+          cp -R "$APP_DIR" Package/Payload/
+          echo "== Payload 内容 =="
+          ls -la Package/Payload/
+          echo ""
+          echo "== 打包中 =="
           cd Package
-          # zip -r 生成标准 ipa（无签名）
           zip -qr ../LuoXiaoHei.ipa .
           cd ..
-          ls -la LuoXiaoHei.ipa
-          echo "::set-output name=ipa_path::$PWD/LuoXiaoHei.ipa"
+          echo ""
+          echo "== 生成的 IPA 文件 =="
+          ls -lh LuoXiaoHei.ipa
+          IPA_SIZE=$(stat -f%z LuoXiaoHei.ipa 2>/dev/null || stat -c%s LuoXiaoHei.ipa 2>/dev/null)
+          echo "IPA 大小(字节): $IPA_SIZE"
+          if [ "$IPA_SIZE" -lt 1000000 ]; then
+            echo "⚠️ 警告：IPA 小于 1MB，资源文件可能缺失"
+          else
+            echo "✅ IPA 大小正常 (> 1MB)"
+          fi
 
-      - name: Upload IPA artifact
+      - name: Step 7 - 上传 IPA
         uses: actions/upload-artifact@v4
         with:
           name: LuoXiaoHei-IPA
           path: LuoXiaoHeiApp/LuoXiaoHei.ipa
           retention-days: 30
 
-      - name: Upload debug logs if failure
+      - name: 构建失败时上传日志
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: build-logs
-          path: LuoXiaoHeiApp/DerivedData/Logs/Build/*.xcactivitylog
+          path: LuoXiaoHeiApp/build.log
           retention-days: 14
