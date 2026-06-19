@@ -162,20 +162,19 @@ jobs:
           echo "== .app 包内文件总数 =="
           find "$APP_DIR" -type f | wc -l
           echo ""
-          echo "== .app 包内 Info.plist 关键信息（plutil 解析） =="
-          plutil -p "$APP_DIR/Info.plist" 2>&1 | grep -E "CFBundle|DisplayName|BundleName|BundleExec|Icon|Scene|ApplicationSceneManifest" | head -30
-          echo ""
-          echo "== Info.plist XML 全文（前 60 行） =="
-          plutil -convert xml1 -o - "$APP_DIR/Info.plist" 2>&1 | head -60
-          echo ""
           echo "== 关键资源文件检查 =="
-          echo "rumor_data.json:"; ls -lh "$APP_DIR/rumor_data.json" 2>&1
-          echo "zh_cn.json:"; ls -lh "$APP_DIR/zh_cn.json" 2>&1
+          echo "rumor_data.json:"; ls -lh "$APP_DIR/rumor_data.json" 2>&1 || true
+          echo "zh_cn.json:"; ls -lh "$APP_DIR/zh_cn.json" 2>&1 || true
           echo ""
           echo "== 图标文件检查 =="
-          echo "AppIcon-60x60@2x.png:"; ls -lh "$APP_DIR/AppIcon-60x60@2x.png" 2>&1
-          echo "AppIcon-60x60@3x.png:"; ls -lh "$APP_DIR/AppIcon-60x60@3x.png" 2>&1
-          echo "AppIcon-60x60.png:"; ls -lh "$APP_DIR/AppIcon-60x60.png" 2>&1
+          echo "AppIcon-60x60@2x.png:"; ls -lh "$APP_DIR/AppIcon-60x60@2x.png" 2>&1 || true
+          echo "AppIcon-60x60@3x.png:"; ls -lh "$APP_DIR/AppIcon-60x60@3x.png" 2>&1 || true
+          echo ""
+          echo "== .app 包内 Info.plist 关键信息（plutil 解析） =="
+          plutil -p "$APP_DIR/Info.plist" 2>&1 | grep -E "CFBundle|DisplayName|BundleName|BundleExec|Icon|Scene|ApplicationSceneManifest" | head -30 || true
+          echo ""
+          echo "== Info.plist XML 全文（前 60 行） =="
+          plutil -convert xml1 -o - "$APP_DIR/Info.plist" 2>&1 | head -60 || true
           echo ""
           echo "== .app 包内的完整文件列表 =="
           ls -lh "$APP_DIR/"
