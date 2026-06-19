@@ -42,6 +42,12 @@ jobs:
             echo ""
             echo "文件总数: $(ls LuoXiaoHei/Resources/ | wc -l | tr -d ' ')"
             echo "目录大小: $(du -sh LuoXiaoHei/Resources/ | awk '{print $1}')"
+            echo ""
+            echo "按扩展名统计:"
+            ls LuoXiaoHei/Resources/*.jpg 2>/dev/null | wc -l | tr -d ' ' | xargs -I{} echo "  .jpg: {} 个"
+            ls LuoXiaoHei/Resources/*.png 2>/dev/null | wc -l | tr -d ' ' | xargs -I{} echo "  .png: {} 个"
+            ls LuoXiaoHei/Resources/*.json 2>/dev/null | wc -l | tr -d ' ' | xargs -I{} echo "  .json: {} 个"
+            ls LuoXiaoHei/Resources/*.md 2>/dev/null | wc -l | tr -d ' ' | xargs -I{} echo "  .md: {} 个"
           else
             echo "Resources 目录不存在！"
           fi
@@ -85,23 +91,34 @@ jobs:
           echo ""
           echo "构建完成，退出码: $?"
 
-      # === 关键修复：手动把 Resources 目录的文件复制进 .app 包 ===
-      - name: Step 4.5 - 手动复制资源文件到 app bundle
+      # === 关键修复：手动把 Resources 目录的文件 + 图标文件复制进 .app 包 ===
+      - name: Step 4.5 - 手动复制资源文件和图标到 app bundle
         run: |
           APP_DIR="$PWD/DerivedData/Build/Products/Release-iphoneos/LuoXiaoHei.app"
           echo "== 复制前 .app 大小 =="
           du -sh "$APP_DIR"
           echo ""
-          echo "== 正在复制 Resources/ 目录的文件到 .app 包 =="
+          echo "== 复制 Resources/ 数据文件和图片 =="
           if [ -d "LuoXiaoHei/Resources" ]; then
             cp -v LuoXiaoHei/Resources/*.jpg "$APP_DIR/" 2>/dev/null
             cp -v LuoXiaoHei/Resources/*.png "$APP_DIR/" 2>/dev/null
             cp -v LuoXiaoHei/Resources/*.json "$APP_DIR/" 2>/dev/null
             cp -v LuoXiaoHei/Resources/*.md "$APP_DIR/" 2>/dev/null
-            echo ""
-            echo "复制完成！"
+            echo "✅ Resources 复制完成"
           else
-            echo "Resources 目录不存在，无法复制"
+            echo "⚠️ Resources 目录不存在"
+          fi
+          echo ""
+          echo "== 复制 AppIcon 图标文件 =="
+          if [ -d "LuoXiaoHei/Assets.xcassets/AppIcon.appiconset" ]; then
+            for icon in LuoXiaoHei/Assets.xcassets/AppIcon.appiconset/AppIcon-*.png; do
+              if [ -f "$icon" ]; then
+                cp -v "$icon" "$APP_DIR/"
+              fi
+            done
+            echo "✅ 图标复制完成"
+          else
+            echo "⚠️ AppIcon 目录不存在"
           fi
           echo ""
           echo "== 复制后 .app 大小 =="
@@ -109,6 +126,12 @@ jobs:
           echo ""
           echo "== .app 包内文件总数 =="
           find "$APP_DIR" -type f | wc -l
+          echo ""
+          echo "== .app 包内 Info.plist 关键信息 =="
+          grep -A1 -E "CFBundleDisplayName|CFBundleName|CFBundleShortVersion|CFBundleIcons" "$APP_DIR/Info.plist" | head -20
+          echo ""
+          echo "== .app 包内的文件列表 =="
+          ls -lh "$APP_DIR/" | head -30
 
       - name: Step 5 - 打包成 IPA
         run: |
@@ -126,6 +149,8 @@ jobs:
           echo ""
           echo "== 完成！IPA 文件 =="
           ls -lh LuoXiaoHei.ipa
+          SIZE_BYTES=$(stat -f%z LuoXiaoHei.ipa 2>/dev/null || stat -c%s LuoXiaoHei.ipa 2>/dev/null)
+          echo "大小: $SIZE_BYTES 字节 ($(echo "$SIZE_BYTES/1024/1024" | bc -l | cut -c1-4) MB)"
 
       - name: Step 6 - 上传 IPA
         uses: actions/upload-artifact@v4
@@ -133,3 +158,10 @@ jobs:
           name: LuoXiaoHei-IPA
           path: LuoXiaoHeiApp/LuoXiaoHei.ipa
           retention-days: 30
+
+      - name: 失败时上传构建日志
+        if: failure()
+        run: |
+          echo "构建失败，检查 DerivedData..."
+          ls -la LuoXiaoHeiApp/DerivedData/Build/Products/Release-iphoneos/ 2>/dev/null || echo "路径不存在"
+        working-directory: .
