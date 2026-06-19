@@ -98,6 +98,12 @@ jobs:
           echo "== 复制前 .app 大小 =="
           du -sh "$APP_DIR"
           echo ""
+          echo "== 关键：可执行文件名（必须与 Info.plist CFBundleExecutable 匹配） =="
+          ls -lh "$APP_DIR" | grep -E "^-" | head -5
+          echo ""
+          echo "== 关键：有没有 Assets.car （图标文件） =="
+          ls -lh "$APP_DIR/Assets.car" 2>/dev/null || echo "❌ 没有 Assets.car"
+          echo ""
           echo "== 复制 Resources/ 数据文件和图片 =="
           if [ -d "LuoXiaoHei/Resources" ]; then
             cp -v LuoXiaoHei/Resources/*.jpg "$APP_DIR/" 2>/dev/null
@@ -109,14 +115,25 @@ jobs:
             echo "⚠️ Resources 目录不存在"
           fi
           echo ""
-          echo "== 复制 AppIcon 图标文件 =="
+          echo "== 复制 AppIcon 图标文件到 .app 包（不依赖 Assets.car） =="
           if [ -d "LuoXiaoHei/Assets.xcassets/AppIcon.appiconset" ]; then
+            # 1. 复制所有图标 PNG 到 .app 包根目录
             for icon in LuoXiaoHei/Assets.xcassets/AppIcon.appiconset/AppIcon-*.png; do
               if [ -f "$icon" ]; then
-                cp -v "$icon" "$APP_DIR/"
+                basename_icon=$(basename "$icon")
+                cp -v "$icon" "$APP_DIR/$basename_icon"
+              fi
+            done
+            # 2. 把 @1x 的文件复制一份为不带后缀的版本（iOS 会自动找 AppIcon-20x20.png）
+            for icon1x in "$APP_DIR"/AppIcon-*@1x.png; do
+              if [ -f "$icon1x" ]; then
+                plain_name=$(basename "$icon1x" | sed 's/@1x//')
+                cp -v "$icon1x" "$APP_DIR/$plain_name"
               fi
             done
             echo "✅ 图标复制完成"
+            echo "已复制的图标文件:"
+            ls -lh "$APP_DIR"/AppIcon-*.png | head -10
           else
             echo "⚠️ AppIcon 目录不存在"
           fi
@@ -128,10 +145,10 @@ jobs:
           find "$APP_DIR" -type f | wc -l
           echo ""
           echo "== .app 包内 Info.plist 关键信息 =="
-          grep -A1 -E "CFBundleDisplayName|CFBundleName|CFBundleShortVersion|CFBundleIcons" "$APP_DIR/Info.plist" | head -20
+          grep -A1 -E "CFBundleDisplayName|CFBundleName|CFBundleExecutable|CFBundleIdentifier" "$APP_DIR/Info.plist" | head -20
           echo ""
           echo "== .app 包内的文件列表 =="
-          ls -lh "$APP_DIR/" | head -30
+          ls -lh "$APP_DIR/"
 
       - name: Step 5 - 打包成 IPA
         run: |
