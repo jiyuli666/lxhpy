@@ -36,22 +36,25 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
     }
 
     private func setupViews() {
-        view.backgroundColor = ThemeManager.shared.background
+        view.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
 
         titleLabel.text = loc("app_title")
+        titleLabel.textColor = UIColor(red: 0.13, green: 0.13, blue: 0.15, alpha: 1.0)
         titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
 
         searchBar.placeholder = loc("search_placeholder")
-        searchBar.searchBarStyle = .minimal
+        searchBar.searchBarStyle = .default
         searchBar.delegate = self
         searchBar.returnKeyType = .search
+        searchBar.tintColor = UIColor.systemOrange
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchBar)
 
         historyLabel.text = loc("search_history")
+        historyLabel.textColor = UIColor(red: 0.40, green: 0.40, blue: 0.45, alpha: 1.0)
         historyLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         historyLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(historyLabel)
@@ -63,6 +66,7 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
         view.addSubview(historyStack)
 
         homeTextLabel.text = loc("home_text")
+        homeTextLabel.textColor = UIColor(red: 0.13, green: 0.13, blue: 0.15, alpha: 1.0)
         homeTextLabel.font = UIFont.systemFont(ofSize: 15)
         homeTextLabel.textAlignment = .center
         homeTextLabel.numberOfLines = 0
@@ -73,7 +77,7 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
         categoryTable.delegate = self
         categoryTable.rowHeight = UITableView.automaticDimension
         categoryTable.estimatedRowHeight = 56
-        categoryTable.backgroundColor = .clear
+        categoryTable.backgroundColor = UIColor.clear
         categoryTable.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(categoryTable)
 
@@ -122,17 +126,12 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
     }
 
     private func applyAppearance() {
-        view.backgroundColor = ThemeManager.shared.background
-        titleLabel.textColor = ThemeManager.shared.text
-        homeTextLabel.textColor = ThemeManager.shared.secondaryText
-        historyLabel.textColor = ThemeManager.shared.secondaryText
-        searchBar.tintColor = ThemeManager.shared.accent
-        searchBar.barStyle = ThemeManager.shared.isDark ? .black : .default
-        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
-            textField.textColor = ThemeManager.shared.text
-            textField.keyboardAppearance = ThemeManager.shared.isDark ? .dark : .light
-        }
-        overrideUserInterfaceStyle = ThemeManager.shared.isDark ? .dark : .light
+        view.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
+        titleLabel.textColor = UIColor(red: 0.13, green: 0.13, blue: 0.15, alpha: 1.0)
+        homeTextLabel.textColor = UIColor(red: 0.40, green: 0.40, blue: 0.45, alpha: 1.0)
+        historyLabel.textColor = UIColor(red: 0.40, green: 0.40, blue: 0.45, alpha: 1.0)
+        searchBar.tintColor = UIColor.systemOrange
+        searchBar.barStyle = .default
         categoryTable.reloadData()
         refreshHistory()
     }
@@ -231,11 +230,11 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
         let cell = reused ?? UITableViewCell(style: .subtitle, reuseIdentifier: "CatCell")
         let cat = RumorDataStore.shared.categories[indexPath.row]
         cell.textLabel?.text = cat
-        cell.textLabel?.textColor = ThemeManager.shared.text
+        cell.textLabel?.textColor = UIColor(red: 0.13, green: 0.13, blue: 0.15, alpha: 1.0)
         cell.detailTextLabel?.text = "\(RumorDataStore.shared.items(in: cat).count) \(loc("rumor_detail"))"
-        cell.detailTextLabel?.textColor = ThemeManager.shared.secondaryText
+        cell.detailTextLabel?.textColor = UIColor(red: 0.40, green: 0.40, blue: 0.45, alpha: 1.0)
         cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = ThemeManager.shared.surface
+        cell.backgroundColor = UIColor.white
         return cell
     }
 
