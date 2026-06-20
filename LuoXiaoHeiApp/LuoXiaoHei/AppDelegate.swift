@@ -13,22 +13,29 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         Localization.shared.load(language: ConfigManager.shared.config.language)
         _ = RumorDataStore.shared
 
-        // 创建主窗口
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        // 强制获取屏幕真实大小（覆盖整个屏幕）
+        let screenBounds = UIScreen.main.bounds
+
+        // 创建主窗口 —— 明确指定全屏大小
+        let window = UIWindow(frame: screenBounds)
         window.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
+        window.windowLevel = .normal
+        window.isHidden = false
 
-        // 构建根 VC（用 UINavigationController 包装 HomeViewController）
+        // 直接用 HomeViewController 作为 rootViewController（不包在 UINavigationController 中）
         let home = HomeViewController()
-        let nav = UINavigationController(rootViewController: home)
-        nav.navigationBar.tintColor = UIColor.systemOrange
-        nav.navigationBar.barTintColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
-        nav.navigationBar.isTranslucent = false
-        nav.view.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
-        nav.modalPresentationStyle = .fullScreen
+        window.rootViewController = home
 
-        window.rootViewController = nav
+        // 确保 window 在最上层并可见
         window.makeKeyAndVisible()
         self.window = window
+
+        // 强制立即布局，确保 view 正确覆盖整个屏幕
+        DispatchQueue.main.async {
+            home.view.setNeedsLayout()
+            home.view.layoutIfNeeded()
+        }
+
         return true
     }
 }
