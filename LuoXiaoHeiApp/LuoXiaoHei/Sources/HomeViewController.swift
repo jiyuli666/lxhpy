@@ -3,25 +3,12 @@ import UIKit
 // MARK: - 主页视图控制器
 public final class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
 
-    // UI 元素
-    private let navBar = UIView()           // 自定义导航栏
-    private let settingsBtn = UIButton(type: .system)  // 设置按钮
-    private let exportBtn = UIButton(type: .system)    // 导出按钮
     private let titleLabel = UILabel()
     private let searchBar = UISearchBar()
     private let historyLabel = UILabel()
     private let historyStack = UIStackView()
     private let homeTextLabel = UILabel()
     private let categoryTable = UITableView(frame: .zero, style: .insetGrouped)
-
-    public override func loadView() {
-        // 手动创建一个全屏大小的 UIView（确保覆盖整个屏幕）
-        let screenBounds = UIScreen.main.bounds
-        let mainView = UIView(frame: screenBounds)
-        mainView.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
-        mainView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        self.view = mainView
-    }
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,31 +38,6 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
     private func setupViews() {
         view.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
 
-        // 自定义导航栏（顶部）
-        navBar.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
-        navBar.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(navBar)
-
-        // 设置按钮（左）
-        if let gear = UIImage(systemName: "gearshape") {
-            settingsBtn.setImage(gear, for: .normal)
-        } else {
-            settingsBtn.setTitle("⚙", for: .normal)
-        }
-        settingsBtn.tintColor = UIColor.systemOrange
-        settingsBtn.addTarget(self, action: #selector(settingsTapped), for: .touchUpInside)
-        settingsBtn.translatesAutoresizingMaskIntoConstraints = false
-        navBar.addSubview(settingsBtn)
-
-        // 导出按钮（右）
-        exportBtn.setTitle(loc("export_content"), for: .normal)
-        exportBtn.setTitleColor(UIColor.systemOrange, for: .normal)
-        exportBtn.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        exportBtn.addTarget(self, action: #selector(exportTapped), for: .touchUpInside)
-        exportBtn.translatesAutoresizingMaskIntoConstraints = false
-        navBar.addSubview(exportBtn)
-
-        // 主标题
         titleLabel.text = loc("app_title")
         titleLabel.textColor = UIColor(red: 0.13, green: 0.13, blue: 0.15, alpha: 1.0)
         titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
@@ -118,28 +80,26 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
         categoryTable.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
         categoryTable.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(categoryTable)
+
+        // 导航栏按钮
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: loc("export_content"),
+            style: .plain,
+            target: self, action: #selector(exportTapped))
+        let settingsButton: UIBarButtonItem
+        if let gear = UIImage(systemName: "gearshape") {
+            settingsButton = UIBarButtonItem(image: gear, style: .plain,
+                                              target: self, action: #selector(settingsTapped))
+        } else {
+            settingsButton = UIBarButtonItem(title: "⚙", style: .plain,
+                                              target: self, action: #selector(settingsTapped))
+        }
+        navigationItem.leftBarButtonItem = settingsButton
     }
 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            // 自定义导航栏（覆盖屏幕顶部 + 状态栏区域）
-            navBar.topAnchor.constraint(equalTo: view.topAnchor),
-            navBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            navBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            navBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 44),
-
-            // 设置按钮（导航栏左侧）
-            settingsBtn.leadingAnchor.constraint(equalTo: navBar.leadingAnchor, constant: 16),
-            settingsBtn.centerYAnchor.constraint(equalTo: navBar.safeAreaLayoutGuide.centerYAnchor),
-            settingsBtn.widthAnchor.constraint(equalToConstant: 32),
-            settingsBtn.heightAnchor.constraint(equalToConstant: 32),
-
-            // 导出按钮（导航栏右侧）
-            exportBtn.trailingAnchor.constraint(equalTo: navBar.trailingAnchor, constant: -16),
-            exportBtn.centerYAnchor.constraint(equalTo: navBar.safeAreaLayoutGuide.centerYAnchor),
-
-            // 主标题（从导航栏下方开始）
-            titleLabel.topAnchor.constraint(equalTo: navBar.bottomAnchor, constant: 12),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
