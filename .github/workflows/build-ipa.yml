@@ -73,6 +73,7 @@ jobs:
 
       - name: Step 4 - 构建 iOS 应用
         run: |
+          set -o pipefail
           xcodebuild \
             -project LuoXiaoHei.xcodeproj \
             -scheme LuoXiaoHei \
@@ -87,9 +88,9 @@ jobs:
             build \
             ONLY_ACTIVE_ARCH=NO \
             -derivedDataPath "$PWD/DerivedData" \
-            2>&1 | tail -30
+            2>&1 | tee build.log | tail -40
           echo ""
-          echo "构建完成，退出码: $?"
+          echo "构建完成，退出码: ${PIPESTATUS[0]}"
 
       # === 关键修复：手动把 Resources 目录的文件 + 图标文件复制进 .app 包 ===
       - name: Step 4.5 - 手动复制资源文件和图标到 app bundle
