@@ -6,6 +6,7 @@
 const I18N_DATA = {
     "zh_cn": {
         "app_title": "罗小黑战记辟谣查询",
+        "hero_subtitle": "输入关键词，快速查找相关辟谣内容",
         "all_categories": "全部分类",
         "search_placeholder": "输入关键词搜索",
         "search": "搜索",
@@ -47,6 +48,7 @@ const I18N_DATA = {
     },
     "zh_tw": {
         "app_title": "羅小黑戰記闢謠查詢",
+        "hero_subtitle": "輸入關鍵詞，快速查找相關闢謠內容",
         "all_categories": "全部類別",
         "search_placeholder": "輸入關鍵詞搜索",
         "search": "搜索",
@@ -88,6 +90,7 @@ const I18N_DATA = {
     },
     "en_gb": {
         "app_title": "The Legend of Luo Xiaohei Rumor Refutation",
+        "hero_subtitle": "Enter keywords to quickly find related refutation content",
         "all_categories": "All Categories",
         "search_placeholder": "Enter keywords to search",
         "search": "Search",
@@ -129,6 +132,7 @@ const I18N_DATA = {
     },
     "ja": {
         "app_title": "羅小黒戦記 噂の真相",
+        "hero_subtitle": "キーワードを入力して、関連する噂の真相を素早く検索",
         "all_categories": "全カテゴリー",
         "search_placeholder": "キーワードを入力して検索",
         "search": "検索",
@@ -170,6 +174,7 @@ const I18N_DATA = {
     },
     "ko": {
         "app_title": "라오소흑전기 루머 반박",
+        "hero_subtitle": "키워드를 입력하여 관련 루머 반박 내용을 빠르게 찾아보세요",
         "all_categories": "모든 카테고리",
         "search_placeholder": "키워드를 입력하여 검색하세요",
         "search": "검색",
@@ -211,6 +216,7 @@ const I18N_DATA = {
     },
     "ru": {
         "app_title": "Оправдание слухов о Ло Сяохэ",
+        "hero_subtitle": "Введите ключевые слова, чтобы быстро найти связанный контент опровержения слухов",
         "all_categories": "Все категории",
         "search_placeholder": "Введите ключевые слова для поиска",
         "search": "Поиск",

@@ -1,118 +1,32 @@
 /**
- * 罗小黑战记辟谣查询工具 - JavaScript主文件
- * 版本: 1.0.2
- * 更新时间: 2026-05-17
+ * 罗小黑战记辟谣查询工具 - 重构版主程序
+ * 版本: 2.0.0
+ * 特性: 现代化UI、玻璃拟态、粒子背景、交互动画、多语言
  */
 
 (function() {
-    // 全局变量
-    let RUMOR_DATA = null;
-    let flatItems = [];
-    let darkMode = false;
-    let lastSearchResults = [];
-    let lastKeyword = '';
-    
-    // 图片查看器相关变量
-    let currentImageIndex = 0;
-    let currentImages = [];
-    
-    // DOM元素缓存
-    const elements = {};
-    
-    // ---------- 初始化 ----------
-    async function init() {
-        // 初始化DOM元素引用
-        initElements();
-        
-        // 先等待i18n初始化完成，然后加载对应语言的数据
-        if (typeof i18n !== 'undefined' && i18n.currentLang) {
-            loadRumorData(i18n.currentLang);
-        } else {
-            loadRumorData('zh_cn');
-        }
-        
-        // 加载用户设置
-        loadUserSettings();
-        
-        // 初始化事件监听
-        initEventListeners();
-        
-        // 构建侧边栏
-        buildSidebar();
-        
-        // 语言改变时更新UI
-        document.addEventListener('languageChanged', (e) => {
-            const lang = e.detail.language;
-            loadRumorData(lang);
-            buildSidebar();
-            showHome();
-        });
-        
-        // 显示主页
-        showHome();
-    }
-    
-    // 初始化DOM元素引用
-    function initElements() {
-        elements.darkModeBtn = document.getElementById('darkModeBtn');
-        elements.downloadBtn = document.getElementById('downloadBtn');
-        elements.categoryBtn = document.getElementById('categoryBtn');
-        elements.sidebar = document.getElementById('sidebar');
-        elements.overlay = document.getElementById('overlay');
-        elements.categoryContainer = document.getElementById('categoryContainer');
-        elements.searchInput = document.getElementById('searchInput');
-        elements.searchBtn = document.getElementById('searchBtn');
-        elements.resultBox = document.getElementById('resultBox');
-        elements.bigTitle = document.getElementById('bigTitle');
-        elements.centerWrapper = document.getElementById('centerWrapper');
-        elements.loading = document.getElementById('loading');
-        elements.downloadModal = document.getElementById('downloadModal');
-        elements.closeModal = document.getElementById('closeModal');
-        elements.downloadWindows = document.getElementById('downloadWindows');
-        elements.downloadAndroid = document.getElementById('downloadAndroid');
-        elements.addIOS = document.getElementById('addIOS');
-        
-        // 图片查看器元素
-        elements.imageViewer = document.getElementById('imageViewer');
-        elements.viewerImage = document.getElementById('viewerImage');
-        elements.prevBtn = document.getElementById('prevBtn');
-        elements.nextBtn = document.getElementById('nextBtn');
-        elements.closeViewerBtn = document.getElementById('closeViewerBtn');
-        elements.imageCount = document.getElementById('imageCount');
-        
-        // 创建搜索历史容器
-        createSearchHistoryContainer();
-    }
-    
-    // 加载辟谣数据
-    function loadRumorData(lang) {
-        if (!lang) lang = 'zh_cn';
-        if (typeof RUMOR_DATA_ALL !== 'undefined' && RUMOR_DATA_ALL[lang]) {
-            RUMOR_DATA = RUMOR_DATA_ALL[lang];
-        } else if (typeof RUMOR_DATA_ALL !== 'undefined' && RUMOR_DATA_ALL['zh_cn']) {
-            // 回退到中文
-            RUMOR_DATA = RUMOR_DATA_ALL['zh_cn'];
-        } else {
-            // 兜底的初始化数据
-            RUMOR_DATA = {};
-        }
-        // 展平数据用于搜索
-        flatItems = [];
-        if (RUMOR_DATA) {
-            for (const category in RUMOR_DATA) {
-                for (const title in RUMOR_DATA[category]) {
-                    flatItems.push({
-                        category,
-                        title,
-                        content: RUMOR_DATA[category][title]
-                    });
-                }
-            }
-        }
-        console.log('辟谣数据加载成功', lang);
-    }
-    
-    // 图片映射数据 - 使用中文键名保持兼容性
+    'use strict';
+
+    // ==================== 状态管理 ====================
+    const state = {
+        RUMOR_DATA: null,
+        flatItems: [],
+        darkMode: false,
+        lastSearchResults: [],
+        lastKeyword: '',
+        currentImageIndex: 0,
+        currentImages: [],
+        isSearching: false,
+        typewriterTimer: null
+    };
+
+    // ==================== DOM 引用缓存 ====================
+    const $ = (id) => document.getElementById(id);
+    const $$ = (sel, ctx = document) => ctx.querySelectorAll(sel);
+
+    const els = {};
+
+    // ==================== 图片映射（兼容原数据） ====================
     const IMAGE_MAPPING = {
         "弃养谣言（\"从小养的奶猫丢到野外\"\"吃猫血馒头\"）": ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
         "二次丢猫谣言（\"小黑跑回家后被开车丢到燕郊\"）": ["二次丢猫谣言.jpg"],
@@ -136,578 +50,720 @@
         "12人公司一年500场官司\"版权流氓\"谣言": ["12人公司1年500官司.jpg"],
         "更新慢谣言（\"公司忙着打官司不认真更新\"\"年更只为圈钱\"）": ["更新慢谣言.jpg", "更新慢谣言2.jpg"]
     };
-    
-    // 多语言图片映射表
-    const IMAGE_MAPPING_MULTI = {
-        "zh_cn": {
-            "弃养谣言": ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
-            "二次丢猫谣言": ["二次丢猫谣言.jpg"],
-            "小黑原型的真实经历与性格": ["小黑原型的真实经历与性格.jpg"],
-            "政治立场谣言": ["政治立场谣言.PNG", "政治立场谣言2.jpg", "政治立场谣言3.jpg", "政治立场谣言4.jpg"],
-            "荤段子": ["荤段子及辱女、恋童癖谣言.jpg"],
-            "性别相关谣言": ["性别相关谣言.jpg"],
-            "主动下场": ["主动下场、不站队引战谣言.jpg"],
-            "歌词篡改": ["歌词篡改谣言.jpg"],
-            "黑神话": ["黑神话事件牵连谣言.jpg"],
-            "色图争议": ["色图争议.jpg"],
-            "中外粉丝态度不一": ["中外粉丝态度不一、亲近日本谣言.jpg", "中外粉丝态度不一、亲近日本谣言2.JPG"],
-            "粉丝网暴": ["粉丝网暴、开盒谣言.jpg", "粉丝网暴、开盒谣言2.jpg"],
-            "顾杰": ["关于顾杰编剧分工和\"老登\"的谣言.jpg"],
-            "鹿野": ["关于鹿野角色创作的谣言.jpg"],
-            "外网918": ["外网918更新谣言.JPG"],
-            "更新不认真": ["更新不认真、频繁请假谣言.jpg"],
-            "抄袭": ["抄袭谣言.JPG"],
-            "催更者死": ["催更者死诅咒谣言.jpg"],
-            "靠IP圈钱": ["靠IP圈钱、不重视作品谣言.jpg"],
-            "12人公司": ["12人公司1年500官司.jpg"],
-            "更新慢": ["更新慢谣言.jpg", "更新慢谣言2.jpg"]
-        },
-        "zh_tw": {
-            "棄養謠言": ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
-            "二次丟貓謠言": ["二次丢猫谣言.jpg"],
-            "小黑原型的真實經歷與性格": ["小黑原型的真实经历与性格.jpg"],
-            "政治立場謠言": ["政治立场谣言.PNG", "政治立场谣言2.jpg", "政治立场谣言3.jpg", "政治立场谣言4.jpg"],
-            "葷段子": ["荤段子及辱女、恋童癖谣言.jpg"],
-            "性別相關謠言": ["性别相关谣言.jpg"],
-            "主動下場": ["主动下场、不站队引战谣言.jpg"],
-            "歌詞篡改": ["歌词篡改谣言.jpg"],
-            "黑神話": ["黑神话事件牵连谣言.jpg"],
-            "色圖爭議": ["色图争议.jpg"],
-            "中外粉絲態度不一": ["中外粉丝态度不一、亲近日本谣言.jpg", "中外粉丝态度不一、亲近日本谣言2.JPG"],
-            "粉絲網暴": ["粉丝网暴、开盒谣言.jpg", "粉丝网暴、开盒谣言2.jpg"],
-            "顧傑": ["关于顾杰编剧分工和\"老登\"的谣言.jpg"],
-            "鹿野": ["关于鹿野角色创作的谣言.jpg"],
-            "外網918": ["外网918更新谣言.JPG"],
-            "更新不認真": ["更新不认真、频繁请假谣言.jpg"],
-            "抄襲": ["抄袭谣言.JPG"],
-            "催更者死": ["催更者死诅咒谣言.jpg"],
-            "靠IP圈錢": ["靠IP圈钱、不重视作品谣言.jpg"],
-            "12人公司": ["12人公司1年500官司.jpg"],
-            "更新慢": ["更新慢谣言.jpg", "更新慢谣言2.jpg"]
-        },
-        "en_gb": {
-            "Abandonment": ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
-            "Second Abandonment": ["二次丢猫谣言.jpg"],
-            "True Experiences": ["小黑原型的真实经历与性格.jpg"],
-            "Political Stance": ["政治立场谣言.PNG", "政治立场谣言2.jpg", "政治立场谣言3.jpg", "政治立场谣言4.jpg"],
-            "Vulgar": ["荤段子及辱女、恋童癖谣言.jpg"],
-            "Gender-related": ["性别相关谣言.jpg"],
-            "Active Engagement": ["主动下场、不站队引战谣言.jpg"],
-            "Lyric Tampering": ["歌词篡改谣言.jpg"],
-            "Black Myth": ["黑神话事件牵连谣言.jpg"],
-            "Erotic Art": ["色图争议.jpg"],
-            "Differing Attitudes": ["中外粉丝态度不一、亲近日本谣言.jpg", "中外粉丝态度不一、亲近日本谣言2.JPG"],
-            "Cyberbullying": ["粉丝网暴、开盒谣言.jpg", "粉丝网暴、开盒谣言2.jpg"],
-            "Gu Jie": ["关于顾杰编剧分工和\"老登\"的谣言.jpg"],
-            "Lu Ye": ["关于鹿野角色创作的谣言.jpg"],
-            "Foreign": ["外网918更新谣言.JPG"],
-            "Not Serious": ["更新不认真、频繁请假谣言.jpg"],
-            "Plagiarism": ["抄袭谣言.JPG"],
-            "Death to those": ["催更者死诅咒谣言.jpg"],
-            "Cash In": ["靠IP圈钱、不重视作品谣言.jpg"],
-            "12 People": ["12人公司1年500官司.jpg"],
-            "Slow Update": ["更新慢谣言.jpg", "更新慢谣言2.jpg"]
-        },
-        "ja": {
-            "棄養": ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
-            "二度目の遺棄": ["二次丢猫谣言.jpg"],
-            "小黑原型": ["小黑原型的真实经历与性格.jpg"],
-            "政治的立場": ["政治立场谣言.PNG", "政治立场谣言2.jpg", "政治立场谣言3.jpg", "政治立场谣言4.jpg"],
-            "下品な話": ["荤段子及辱女、恋童癖谣言.jpg"],
-            "性別関連": ["性别相关谣言.jpg"],
-            "能動的参加": ["主动下场、不站队引战谣言.jpg"],
-            "歌詞改竄": ["歌词篡改谣言.jpg"],
-            "黑神話": ["黑神话事件牵连谣言.jpg"],
-            "エロ絵論争": ["色图争议.jpg"],
-            "中外ファン態度": ["中外粉丝态度不一、亲近日本谣言.jpg", "中外粉丝态度不一、亲近日本谣言2.JPG"],
-            "ファンボソコン": ["粉丝网暴、开盒谣言.jpg", "粉丝网暴、开盒谣言2.jpg"],
-            "顧傑": ["关于顾杰编剧分工和\"老登\"的谣言.jpg"],
-            "鹿野": ["关于鹿野角色创作的谣言.jpg"],
-            "海外918": ["外网918更新谣言.JPG"],
-            "更新を怠る": ["更新不认真、频繁请假谣言.jpg"],
-            "パクリ": ["抄袭谣言.JPG"],
-            "催促する者は死ぬ": ["催更者死诅咒谣言.jpg"],
-            "IPでかせぐ": ["靠IP圈钱、不重视作品谣言.jpg"],
-            "12人会社": ["12人公司1年500官司.jpg"],
-            "更新が遅い": ["更新慢谣言.jpg", "更新慢谣言2.jpg"]
-        },
-        "ko": {
-            "유기 루머": ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
-            "두 번째 유기 루머": ["二次丢猫谣言.jpg"],
-            "시아오하이 원형": ["小黑原型的真实经历与性格.jpg"],
-            "정치적 입장": ["政治立场谣言.PNG", "政治立场谣言2.jpg", "政治立场谣言3.jpg", "政治立场谣言4.jpg"],
-            "하찮은 농담": ["荤段子及辱女、恋童癖谣言.jpg"],
-            "성별 관련": ["性别相关谣言.jpg"],
-            "능동적 개입": ["主动下场、不站队引战谣言.jpg"],
-            "가사 조작": ["歌词篡改谣言.jpg"],
-            "검은 신화": ["黑神话事件牵连谣言.jpg"],
-            "성인 그림 논쟁": ["色图争议.jpg"],
-            "중외 팬 태도": ["中外粉丝态度不一、亲近日本谣言.jpg", "中外粉丝态度不一、亲近日本谣言2.JPG"],
-            "팬 폭력": ["粉丝网暴、开盒谣言.jpg", "粉丝网暴、开盒谣言2.jpg"],
-            "顾杰": ["关于顾杰编剧分工和\"老登\"的谣言.jpg"],
-            "루웨이": ["关于鹿野角色创作的谣言.jpg"],
-            "해외 918": ["外网918更新谣言.JPG"],
-            "업데이트 태만": ["更新不认真、频繁请假谣言.jpg"],
-            "표절": ["抄袭谣言.JPG"],
-            "촉구자 죽음": ["催更者死诅咒谣言.jpg"],
-            "IP 현상금": ["靠IP圈钱、不重视作品谣言.jpg"],
-            "12인 회사": ["12人公司1年500官司.jpg"],
-            "느린 업데이트": ["更新慢谣言.jpg", "更新慢谣言2.jpg"]
-        },
-        "ru": {
-            "Слухи об отказе": ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
-            "Второй отказ": ["二次丢猫谣言.jpg"],
-            "Настоящий опыт": ["小黑原型的真实经历与性格.jpg"],
-            "Политическая позиция": ["政治立场谣言.PNG", "政治立场谣言2.jpg", "政治立场谣言3.jpg", "政治立场谣言4.jpg"],
-            "Непристойные шутки": ["荤段子及辱女、恋童癖谣言.jpg"],
-            "Гендерные слухи": ["性别相关谣言.jpg"],
-            "Активное участие": ["主动下场、不站队引战谣言.jpg"],
-            "Изменение текста": ["歌词篡改谣言.jpg"],
-            "Чёрный миф": ["黑神话事件牵连谣言.jpg"],
-            "Спор об эротике": ["色图争议.jpg"],
-            "Разное отношение": ["中外粉丝态度不一、亲近日本谣言.jpg", "中外粉丝态度不一、亲近日本谣言2.JPG"],
-            "Травля фанатов": ["粉丝网暴、开盒谣言.jpg", "粉丝网暴、开盒谣言2.jpg"],
-            "Гу Цзе": ["关于顾杰编剧分工和\"老登\"的谣言.jpg"],
-            "Лу Е": ["关于鹿野角色创作的谣言.jpg"],
-            "Зарубежный 918": ["外网918更新谣言.JPG"],
-            "Несерьёзное обновление": ["更新不认真、频繁请假谣言.jpg"],
-            "Плагиат": ["抄袭谣言.JPG"],
-            "Смерть催促者": ["催更者死诅咒谣言.jpg"],
-            "Деньги IP": ["靠IP圈钱、不重视作品谣言.jpg"],
-            "12 человек компания": ["12人公司1年500官司.jpg"],
-            "Медленное обновление": ["更新慢谣言.jpg", "更新慢谣言2.jpg"]
+
+    // 按文章顺序排列的图片列表（与 RUMOR_DATA_ALL 各语言条目顺序一致）
+    const IMAGE_LIST = [
+        ["弃养谣言.jpg", "弃养谣言2.jpg", "弃养谣言3.jpg", "弃养谣言4.jpg", "弃养谣言5.jpg", "弃养谣言6.JPG"],
+        ["二次丢猫谣言.jpg"],
+        ["小黑原型的真实经历与性格.jpg"],
+        ["政治立场谣言.PNG", "政治立场谣言2.jpg", "政治立场谣言3.jpg", "政治立场谣言4.jpg"],
+        ["荤段子及辱女、恋童癖谣言.jpg"],
+        ["性别相关谣言.jpg"],
+        ["主动下场、不站队引战谣言.jpg"],
+        ["歌词篡改谣言.jpg"],
+        ["黑神话事件牵连谣言.jpg"],
+        ["色图争议.jpg"],
+        ["中外粉丝态度不一、亲近日本谣言.jpg", "中外粉丝态度不一、亲近日本谣言2.JPG"],
+        ["抄袭谣言.JPG"],
+        ["更新慢谣言.jpg", "更新慢谣言2.jpg"],
+        ["催更者死诅咒谣言.jpg"],
+        ["12人公司1年500官司.jpg"],
+        ["靠IP圈钱、不重视作品谣言.jpg"],
+        ["外网918更新谣言.JPG"],
+        ["更新不认真、频繁请假谣言.jpg"],
+        ["黑神话事件牵连谣言.jpg"],
+        ["粉丝网暴、开盒谣言.jpg", "粉丝网暴、开盒谣言2.jpg"],
+        ["关于顾杰编剧分工和\"老登\"的谣言.jpg"],
+        ["关于鹿野角色创作的谣言.jpg"]
+    ];
+
+    // ==================== 初始化 ====================
+    function init() {
+        cacheElements();
+        loadRumorData(getCurrentLang());
+        loadUserSettings();
+        initEventListeners();
+        initCanvasBackground();
+        buildSidebar();
+        typeWriterTitle();
+        showHome();
+
+        document.addEventListener('languageChanged', onLanguageChanged);
+    }
+
+    function cacheElements() {
+        const ids = [
+            'appToolbar', 'darkModeBtn', 'categoryBtn', 'languageSelect', 'downloadBtn',
+            'overlay', 'sidebar', 'closeSidebar', 'categoryContainer',
+            'searchInput', 'searchBtn', 'searchClear', 'searchHistory', 'searchBox',
+            'heroSection', 'heroTitle', 'heroSubtitle',
+            'resultSection', 'resultBox', 'resultMeta', 'backHomeBtn',
+            'contentArea',
+            'downloadModal', 'closeModal', 'downloadWindows', 'downloadAndroid', 'addIOS',
+            'imageViewer', 'viewerImage', 'prevBtn', 'nextBtn', 'closeViewerBtn', 'imageCount',
+            'toast', 'backToTop', 'bgCanvas'
+        ];
+        ids.forEach(id => els[id] = $(id));
+    }
+
+    // ==================== 数据加载 ====================
+    function loadRumorData(lang) {
+        if (!lang) lang = 'zh_cn';
+        if (typeof RUMOR_DATA_ALL !== 'undefined' && RUMOR_DATA_ALL[lang]) {
+            state.RUMOR_DATA = RUMOR_DATA_ALL[lang];
+        } else if (typeof RUMOR_DATA_ALL !== 'undefined' && RUMOR_DATA_ALL['zh_cn']) {
+            state.RUMOR_DATA = RUMOR_DATA_ALL['zh_cn'];
+        } else {
+            state.RUMOR_DATA = {};
         }
-    };
-    
-    // 获取当前语言
+
+        flattenData();
+    }
+
+    function flattenData() {
+        state.flatItems = [];
+        if (!state.RUMOR_DATA) return;
+        for (const category in state.RUMOR_DATA) {
+            for (const title in state.RUMOR_DATA[category]) {
+                state.flatItems.push({
+                    category,
+                    title,
+                    content: state.RUMOR_DATA[category][title]
+                });
+            }
+        }
+    }
+
     function getCurrentLang() {
-        return typeof i18n !== 'undefined' ? i18n.currentLang : 'zh_cn';
+        return (typeof i18n !== 'undefined' && i18n.currentLang) ? i18n.currentLang : 'zh_cn';
     }
-    
-    // 查找图片映射
-    function findImageMapping(title) {
-        const lang = getCurrentLang();
-        
-        // 首先尝试使用中文键名直接匹配（向后兼容）
-        for (const key in IMAGE_MAPPING) {
-            if (title === key || key.includes(title) || title.includes(key)) {
-                return IMAGE_MAPPING[key];
-            }
+
+    function t(key, params = {}) {
+        if (typeof i18n !== 'undefined' && i18n.t) {
+            return i18n.t(key, params);
         }
-        
-        // 使用多语言映射表
-        if (IMAGE_MAPPING_MULTI[lang]) {
-            const mapping = IMAGE_MAPPING_MULTI[lang];
-            for (const key in mapping) {
-                if (title.includes(key) || key.includes(title)) {
-                    return mapping[key];
-                }
-            }
-        }
-        
-        return null;
+        const fallbacks = {
+            'search_placeholder': '输入关键词搜索',
+            'back_to_home': '返回主页',
+            'copy_text': '复制文本',
+            'copied': '已复制',
+            'view_images': '查看相关图片',
+            'no_results': '未找到相关结果',
+            'no_images_found': '没有找到相关图片',
+            'image_count': '{current}/{total}',
+            'download_client': '下载客户端',
+            'select_platform': '选择下载平台',
+            'download_windows': '下载Windows版本',
+            'download_android': '下载Android版本',
+            'download_ios': '下载iOS版本',
+            'open_in_browser': '在浏览器中打开',
+            'all_categories': '全部分类'
+        };
+        let text = fallbacks[key] || key;
+        Object.keys(params).forEach(p => text = text.replace(`{${p}}`, params[p]));
+        return text;
     }
-    
-    // 加载图片（直接加载非加密图片）
-    async function loadEncryptedImage(imgName) {
-        try {
-            const imgPath = `images/${imgName}`;
-            return imgPath;
-        } catch (error) {
-            console.error("Error loading image:", error);
-            return null;
-        }
-    }
-    
-    // 显示图片查看器（使用自定义查看器）
-    function showImageViewer(images) {
-        if (!images || images.length === 0) {
-            alert(typeof i18n !== 'undefined' ? i18n.t('no_images_found') : '没有找到相关图片');
-            return;
-        }
-        
-        currentImages = images;
-        currentImageIndex = 0;
-        elements.imageViewer.classList.add('visible');
-        loadCurrentImage();
-    }
-    
-    // 关闭图片查看器
-    function closeImageViewer() {
-        elements.imageViewer.classList.remove('visible');
-        if (elements.viewerImage.src) {
-            URL.revokeObjectURL(elements.viewerImage.src);
-            elements.viewerImage.src = '';
-        }
-    }
-    
-    // 加载当前图片
-    async function loadCurrentImage() {
-        if (currentImageIndex >= 0 && currentImageIndex < currentImages.length) {
-            const imageUrl = await loadEncryptedImage(currentImages[currentImageIndex]);
-            if (imageUrl) {
-                elements.viewerImage.src = imageUrl;
-                if (typeof i18n !== 'undefined') {
-                    elements.imageCount.textContent = i18n.t('image_count', {
-                        current: currentImageIndex + 1,
-                        total: currentImages.length
-                    });
-                } else {
-                    elements.imageCount.textContent = `${currentImageIndex + 1}/${currentImages.length}`;
-                }
-            }
-        }
-    }
-    
-    // 显示上一张图片
-    function showPrevImage() {
-        if (currentImageIndex > 0) {
-            currentImageIndex--;
-            loadCurrentImage();
-        }
-    }
-    
-    // 显示下一张图片
-    function showNextImage() {
-        if (currentImageIndex < currentImages.length - 1) {
-            currentImageIndex++;
-            loadCurrentImage();
-        }
-    }
-    
-    // 加载用户设置
+
+    // ==================== 用户设置 ====================
     function loadUserSettings() {
-        const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-        if (savedDarkMode) {
-            toggleDarkMode();
-        }
-        loadSearchHistory();
+        const savedDark = localStorage.getItem('lxhpy_darkMode_v2') === 'true';
+        if (savedDark) setDarkMode(true);
+        els.languageSelect.value = getCurrentLang();
     }
-    
-    // 保存用户设置
+
     function saveUserSettings() {
-        localStorage.setItem('darkMode', darkMode);
+        localStorage.setItem('lxhpy_darkMode_v2', state.darkMode);
     }
-    
-    // ---------- 深色模式 ----------
-    function toggleDarkMode() {
-        darkMode = !darkMode;
-        document.body.classList.toggle('dark-mode', darkMode);
-        if (typeof i18n !== 'undefined') {
-            elements.darkModeBtn.textContent = darkMode ? i18n.t('light_mode') : i18n.t('dark_mode');
-        }
+
+    // ==================== 深色模式 ====================
+    function setDarkMode(isDark) {
+        state.darkMode = isDark;
+        document.body.classList.toggle('dark-mode', isDark);
         saveUserSettings();
     }
-    
-    // ---------- 搜索历史记录 ----------
-    function createSearchHistoryContainer() {
-        const historyContainer = document.createElement('div');
-        historyContainer.id = 'searchHistory';
-        historyContainer.className = 'search-history';
-        elements.searchInput.parentNode.appendChild(historyContainer);
-        elements.searchHistory = historyContainer;
+
+    function toggleDarkMode() {
+        setDarkMode(!state.darkMode);
     }
-    
-    function loadSearchHistory() {
-        return JSON.parse(localStorage.getItem('searchHistory') || '[]');
+
+    // ==================== 多语言切换 ====================
+    function onLanguageChanged(e) {
+        const lang = e.detail.language;
+        loadRumorData(lang);
+        buildSidebar();
+        typeWriterTitle();
+        showHome();
+        els.languageSelect.value = lang;
     }
-    
-    function saveSearchHistory(keyword) {
-        const history = loadSearchHistory();
-        const filteredHistory = history.filter(item => item !== keyword);
-        filteredHistory.unshift(keyword);
-        const trimmedHistory = filteredHistory.slice(0, 10);
-        localStorage.setItem('searchHistory', JSON.stringify(trimmedHistory));
+
+    // ==================== 标题打字机效果 ====================
+    function typeWriterTitle() {
+        const el = els.heroTitle;
+        const text = t('app_title');
+        if (state.typewriterTimer) clearInterval(state.typewriterTimer);
+        el.textContent = '';
+        let i = 0;
+        state.typewriterTimer = setInterval(() => {
+            el.textContent += text.charAt(i);
+            i++;
+            if (i >= text.length) clearInterval(state.typewriterTimer);
+        }, 45);
     }
-    
-    function showSearchHistory() {
-        const history = loadSearchHistory();
-        if (history.length === 0) {
-            elements.searchHistory.style.display = 'none';
-            return;
-        }
-        elements.searchHistory.innerHTML = '';
-        history.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'history-item';
-            div.textContent = item;
-            div.addEventListener('click', () => {
-                elements.searchInput.value = item;
-                performSearch();
-                elements.searchHistory.style.display = 'none';
-            });
-            elements.searchHistory.appendChild(div);
-        });
-        elements.searchHistory.style.display = 'block';
-    }
-    
-    function hideSearchHistory() {
-        elements.searchHistory.style.display = 'none';
-    }
-    
-    // ---------- 侧边栏 ----------
+
+    // ==================== 侧边栏 ====================
     function toggleSidebar(show) {
-        if (show === undefined) {
-            elements.sidebar.classList.toggle('visible');
-            elements.overlay.classList.toggle('visible');
-        } else if (show) {
-            elements.sidebar.classList.add('visible');
-            elements.overlay.classList.add('visible');
-        } else {
-            elements.sidebar.classList.remove('visible');
-            elements.overlay.classList.remove('visible');
-        }
+        const isVisible = els.sidebar.classList.contains('visible');
+        const next = show === undefined ? !isVisible : !!show;
+        els.sidebar.classList.toggle('visible', next);
+        els.overlay.classList.toggle('visible', next);
+        els.sidebar.setAttribute('aria-hidden', !next);
     }
-    
+
     function buildSidebar() {
-        elements.categoryContainer.innerHTML = '';
-        if (!RUMOR_DATA) return;
-        
-        for (const cat in RUMOR_DATA) {
-            const catDiv = document.createElement('div');
-            catDiv.className = 'category-item';
-            catDiv.textContent = cat;
-            catDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                catDiv.classList.toggle('open');
-            });
-            elements.categoryContainer.appendChild(catDiv);
-            
-            const subUl = document.createElement('ul');
-            subUl.className = 'subcategory-list';
-            for (const title in RUMOR_DATA[cat]) {
+        els.categoryContainer.innerHTML = '';
+        if (!state.RUMOR_DATA) return;
+
+        for (const cat in state.RUMOR_DATA) {
+            const group = document.createElement('div');
+            group.className = 'category-group';
+            group.dataset.cat = cat;
+
+            const item = document.createElement('div');
+            item.className = 'category-item';
+            item.textContent = cat;
+            item.addEventListener('click', () => group.classList.toggle('open'));
+
+            const list = document.createElement('ul');
+            list.className = 'subcategory-list';
+
+            for (const title in state.RUMOR_DATA[cat]) {
                 const li = document.createElement('li');
                 li.className = 'subcategory-item';
                 li.textContent = title;
-                li.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showDetail(title, RUMOR_DATA[cat][title]);
+                li.dataset.title = title;
+                li.addEventListener('click', () => {
+                    state.lastSearchResults = [];
+                    state.lastKeyword = '';
+                    showDetail(title, state.RUMOR_DATA[cat][title]);
                     toggleSidebar(false);
                 });
-                subUl.appendChild(li);
+                list.appendChild(li);
             }
-            elements.categoryContainer.appendChild(subUl);
+
+            group.appendChild(item);
+            group.appendChild(list);
+            els.categoryContainer.appendChild(group);
         }
     }
-    
-    // ---------- 主界面切换 ----------
-    function showHome() {
-        elements.bigTitle.style.display = 'block';
-        elements.resultBox.style.display = 'none';
-        elements.centerWrapper.style.flex = '1';
-        lastSearchResults = [];
-        lastKeyword = '';
+
+    // ==================== 搜索 ====================
+    function updateSearchClear() {
+        const hasValue = els.searchInput.value.trim().length > 0;
+        els.searchClear.classList.toggle('visible', hasValue);
     }
-    
-    function showSearchMode() {
-        elements.bigTitle.style.display = 'none';
-        elements.resultBox.style.display = 'block';
-        elements.centerWrapper.style.flex = '0';
+
+    function clearSearchInput() {
+        els.searchInput.value = '';
+        updateSearchClear();
+        hideSearchHistory();
+        showHome();
     }
-    
-    function clearResult() {
-        elements.resultBox.innerHTML = '';
+
+    function loadSearchHistory() {
+        try {
+            return JSON.parse(localStorage.getItem('lxhpy_searchHistory_v2') || '[]');
+        } catch {
+            return [];
+        }
     }
-    
-    function showSearchResults(results, keyword) {
-        lastSearchResults = results;
-        lastKeyword = keyword;
-        showSearchMode();
-        clearResult();
-        
-        if (!results.length) {
-            const msg = typeof i18n !== 'undefined' ? i18n.t('no_results').replace('{keyword}', keyword) : `未找到 \"${keyword}\" 相关的内容`;
-            elements.resultBox.innerHTML = `<div class="empty-tip">${msg}</div>`;
+
+    function saveSearchHistory(keyword) {
+        const history = loadSearchHistory().filter(k => k !== keyword);
+        history.unshift(keyword);
+        localStorage.setItem('lxhpy_searchHistory_v2', JSON.stringify(history.slice(0, 10)));
+    }
+
+    function showSearchHistory() {
+        const history = loadSearchHistory();
+        const val = els.searchInput.value.trim();
+        const filtered = history.filter(h => h !== val);
+        if (filtered.length === 0) {
+            hideSearchHistory();
             return;
         }
-        
-        const homeBtn = document.createElement('button');
-        homeBtn.className = 'btn btn-home';
-        homeBtn.textContent = typeof i18n !== 'undefined' ? i18n.t('back_to_home') : '返回主页';
-        homeBtn.style.marginBottom = '10px';
-        homeBtn.addEventListener('click', showHome);
-        elements.resultBox.appendChild(homeBtn);
-        
-        results.forEach(item => {
+        els.searchHistory.innerHTML = '';
+        filtered.forEach(item => {
             const div = document.createElement('div');
-            div.className = 'list-item';
-            div.textContent = item.title;
-            div.addEventListener('click', () => showDetail(item.title, item.content));
-            elements.resultBox.appendChild(div);
+            div.className = 'history-item';
+            div.textContent = item;
+            div.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                els.searchInput.value = item;
+                updateSearchClear();
+                hideSearchHistory();
+                performSearch();
+            });
+            els.searchHistory.appendChild(div);
         });
+        els.searchHistory.classList.add('visible');
     }
-    
-    function showDetail(title, content) {
-        showSearchMode();
-        clearResult();
-        const detailDiv = document.createElement('div');
-        
-        // 检查是否有相关图片 - 使用新的多语言映射函数
-        const images = findImageMapping(title);
-        const hasImages = images !== null;
-        
-        let actionBarHTML = `
-            <div class="action-bar">
-                <button class="btn btn-back" id="backFromDetail">${typeof i18n !== 'undefined' ? i18n.t('back_to_home') : '返回'}</button>
-                <button class="btn btn-copy" id="copyDetail">${typeof i18n !== 'undefined' ? i18n.t('copy_text') : '复制文本'}</button>
-        `;
-        
-        if (hasImages) {
-            actionBarHTML += `
-                <button class="btn btn-view-images" id="viewImagesBtn">${typeof i18n !== 'undefined' ? i18n.t('view_images') : '查看相关图片'}</button>
-            `;
+
+    function hideSearchHistory() {
+        els.searchHistory.classList.remove('visible');
+    }
+
+    function performSearch() {
+        const keyword = els.searchInput.value.trim();
+        if (!keyword) {
+            showHome();
+            return;
         }
-        
-        actionBarHTML += `
+        saveSearchHistory(keyword);
+        hideSearchHistory();
+        updateSearchClear();
+
+        state.isSearching = true;
+        els.resultBox.innerHTML = `
+            <div class="loading-wrap">
+                <div class="spinner"></div>
+                <span>${t('loading')}</span>
             </div>
         `;
-        
-        detailDiv.className = 'detail-page';
-        detailDiv.innerHTML = `
-            <div class="detail-title">${title}</div>
-            <div class="detail-content">${content}</div>
-            ${actionBarHTML}
+        showSearchMode();
+
+        setTimeout(() => {
+            const kw = keyword.toLowerCase();
+            const results = state.flatItems.filter(item =>
+                item.title.toLowerCase().includes(kw) ||
+                item.content.toLowerCase().includes(kw)
+            );
+            state.isSearching = false;
+            showSearchResults(results, keyword);
+        }, 0);
+    }
+
+    // ==================== 视图切换 ====================
+    function showHome() {
+        els.heroSection.classList.remove('hidden');
+        els.resultSection.classList.remove('active');
+        els.searchInput.value = '';
+        updateSearchClear();
+        hideSearchHistory();
+        state.lastSearchResults = [];
+        state.lastKeyword = '';
+        els.resultMeta.innerHTML = '';
+        els.contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showSearchMode() {
+        els.heroSection.classList.add('hidden');
+        els.resultSection.classList.add('active');
+    }
+
+    function showSearchResults(results, keyword) {
+        state.lastSearchResults = results;
+        state.lastKeyword = keyword;
+        showSearchMode();
+        els.contentArea.scrollTo({ top: 0, behavior: 'auto' });
+        els.resultBox.innerHTML = '';
+
+        els.resultMeta.innerHTML = results.length
+            ? `${t('search')}: <strong>${escapeHtml(keyword)}</strong> · ${results.length}${t('no_results').includes('未找到') ? ' 条结果' : ' results'}`
+            : '';
+
+        if (!results.length) {
+            els.resultBox.innerHTML = `
+                <div class="empty-tip">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 001.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 00-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 005.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <div>${t('no_results').replace('{keyword}', escapeHtml(keyword))}</div>
+                </div>
+            `;
+            return;
+        }
+
+        results.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.style.animationDelay = `${i * 0.05}s`;
+            div.innerHTML = `
+                <div class="list-item-title">${highlightText(escapeHtml(item.title), keyword)}</div>
+                <span class="list-item-cat">${escapeHtml(item.category)}</span>
+            `;
+            div.addEventListener('click', () => showDetail(item.title, item.content));
+            els.resultBox.appendChild(div);
+        });
+    }
+
+    function showDetail(title, content) {
+        showSearchMode();
+        els.resultBox.innerHTML = '';
+        els.resultMeta.innerHTML = '';
+        const images = findImageMapping(title);
+        const hasImages = images && images.length > 0;
+
+        const detail = document.createElement('div');
+        detail.className = 'detail-page';
+        detail.innerHTML = `
+            <div class="detail-title">${escapeHtml(title)}</div>
+            <div class="detail-content">${formatContent(content)}</div>
+            <div class="action-bar">
+                <button class="btn btn-ghost" id="btnBack">${t('back_to_home')}</button>
+                <button class="btn btn-success" id="btnCopy">${t('copy_text')}</button>
+                ${hasImages ? `<button class="btn btn-secondary" id="btnImages">${t('view_images')}</button>` : ''}
+            </div>
         `;
-        elements.resultBox.appendChild(detailDiv);
-        
-        document.getElementById('backFromDetail').addEventListener('click', () => {
-            if (lastSearchResults.length) {
-                showSearchResults(lastSearchResults, lastKeyword);
+        els.resultBox.appendChild(detail);
+        els.contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+
+        $('btnBack').addEventListener('click', () => {
+            if (state.lastSearchResults.length) {
+                showSearchResults(state.lastSearchResults, state.lastKeyword);
             } else {
                 showHome();
             }
         });
-        
-        document.getElementById('copyDetail').addEventListener('click', () => {
+
+        $('btnCopy').addEventListener('click', function() {
             navigator.clipboard.writeText(content).then(() => {
-                const btn = document.getElementById('copyDetail');
-                btn.textContent = typeof i18n !== 'undefined' ? i18n.t('copied') : '已复制';
-                setTimeout(() => btn.textContent = typeof i18n !== 'undefined' ? i18n.t('copy_text') : '复制文本', 1500);
-            }).catch(err => {
-                console.error('复制失败:', err);
+                showToast(t('copied'));
+                this.textContent = t('copied');
+                setTimeout(() => this.textContent = t('copy_text'), 1500);
             });
         });
-        
+
         if (hasImages) {
-            document.getElementById('viewImagesBtn').addEventListener('click', () => {
-                showImageViewer(images);
-            });
+            $('btnImages').addEventListener('click', () => showImageViewer(images));
         }
     }
-    
-    function performSearch() {
-        const keyword = elements.searchInput.value.trim();
-        if (!keyword) {
-            showHome();
-            hideSearchHistory();
+
+    function formatContent(text) {
+        return escapeHtml(text).replace(/\n/g, '<br>');
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function highlightText(text, keyword) {
+        if (!keyword) return text;
+        const regex = new RegExp(`(${escapeRegExp(keyword)})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    function escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // ==================== 图片查看器 ====================
+    function findImageMapping(title) {
+        // 优先使用中文完整标题精确匹配
+        if (IMAGE_MAPPING[title]) {
+            return IMAGE_MAPPING[title];
+        }
+        // 其他语言按当前语言数据中的顺序索引匹配
+        const idx = state.flatItems.findIndex(item => item.title === title);
+        if (idx >= 0 && idx < IMAGE_LIST.length) {
+            return IMAGE_LIST[idx];
+        }
+        return null;
+    }
+
+    function showImageViewer(images) {
+        if (!images || images.length === 0) {
+            showToast(t('no_images_found'));
             return;
         }
-        
-        saveSearchHistory(keyword);
-        hideSearchHistory();
-        elements.loading.classList.add('show');
-        
-        setTimeout(() => {
-            const kw = keyword.toLowerCase();
-            const results = flatItems.filter(item =>
-                item.title.toLowerCase().includes(kw) || 
-                item.content.toLowerCase().includes(kw)
-            );
-            showSearchResults(results, keyword);
-            elements.loading.classList.remove('show');
-        }, 100);
+        state.currentImages = images;
+        state.currentImageIndex = 0;
+        els.imageViewer.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+        loadCurrentImage();
     }
-    
-    function showDownloadModal() {
-        elements.downloadModal.classList.add('show');
+
+    function closeImageViewer() {
+        els.imageViewer.classList.remove('visible');
+        document.body.style.overflow = '';
+        els.viewerImage.classList.remove('loaded');
+        els.viewerImage.src = '';
     }
-    
-    function hideDownloadModal() {
-        elements.downloadModal.classList.remove('show');
+
+    function loadCurrentImage() {
+        const name = state.currentImages[state.currentImageIndex];
+        els.viewerImage.classList.remove('loaded');
+        els.viewerImage.src = `images/${name}`;
+        els.imageCount.textContent = t('image_count', {
+            current: state.currentImageIndex + 1,
+            total: state.currentImages.length
+        });
     }
-    
-    function downloadWindowsVersion() {
-        const link = document.createElement('a');
-        link.href = 'https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.3.4-win64.exe';
-        link.download = 'LuoXiaoHeiChecker-1.3.4-win64.exe';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        hideDownloadModal();
-    }
-    
-    function downloadAndroidVersion() {
-        const link = document.createElement('a');
-        link.href = 'https://raw.githubusercontent.com/jiyuli666/lxhpy/main/%E7%BD%97%E5%B0%8F%E9%BB%91%E8%BE%9F%E8%B0%A3%E6%9F%A5%E8%AF%A2.apk';
-        link.download = '罗小黑辟谣查询.apk';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        hideDownloadModal();
-    }
-    
-    function downloadIOSVersion() {
-        alert(typeof i18n !== 'undefined' ? i18n.t('open_in_browser') : '请点击浏览器底部的分享按钮');
-        hideDownloadModal();
-    }
-    
-    function initEventListeners() {
-        const languageSelect = document.getElementById('languageSelect');
-        if (languageSelect) {
-            if (typeof i18n !== 'undefined') {
-                languageSelect.value = i18n.currentLang;
-            }
-            languageSelect.addEventListener('change', (e) => {
-                if (typeof i18n !== 'undefined') {
-                    i18n.setLanguage(e.target.value);
-                }
-            });
+
+    function showPrevImage() {
+        if (state.currentImageIndex > 0) {
+            state.currentImageIndex--;
+            loadCurrentImage();
         }
-        
-        elements.darkModeBtn.addEventListener('click', toggleDarkMode);
-        elements.categoryBtn.addEventListener('click', () => toggleSidebar());
-        elements.overlay.addEventListener('click', () => toggleSidebar(false));
-        elements.searchBtn.addEventListener('click', performSearch);
-        elements.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') performSearch();
+    }
+
+    function showNextImage() {
+        if (state.currentImageIndex < state.currentImages.length - 1) {
+            state.currentImageIndex++;
+            loadCurrentImage();
+        }
+    }
+
+    // ==================== 下载弹窗 ====================
+    function showDownloadModal() {
+        els.downloadModal.classList.add('show');
+    }
+
+    function hideDownloadModal() {
+        els.downloadModal.classList.remove('show');
+    }
+
+    function downloadWindowsVersion() {
+        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.3.4-win64.exe', 'LuoXiaoHeiChecker-1.3.4-win64.exe');
+        hideDownloadModal();
+    }
+
+    function downloadAndroidVersion() {
+        triggerDownload('https://raw.githubusercontent.com/jiyuli666/lxhpy/main/%E7%BD%97%E5%B0%8F%E9%BB%91%E8%BE%9F%E8%B0%A3%E6%9F%A5%E8%AF%A2.apk', '罗小黑辟谣查询.apk');
+        hideDownloadModal();
+    }
+
+    function downloadIOSVersion() {
+        showToast(t('open_in_browser'));
+        hideDownloadModal();
+    }
+
+    function triggerDownload(url, filename) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // ==================== Toast ====================
+    let toastTimer = null;
+    function showToast(message) {
+        els.toast.textContent = message;
+        els.toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2500);
+    }
+
+    // ==================== 返回顶部 ====================
+    function updateBackToTop() {
+        const scrolled = els.contentArea.scrollTop > 300;
+        els.backToTop.classList.toggle('visible', scrolled);
+    }
+
+    // ==================== 事件监听 ====================
+    function initEventListeners() {
+        els.darkModeBtn.addEventListener('click', toggleDarkMode);
+        els.categoryBtn.addEventListener('click', () => toggleSidebar());
+        els.closeSidebar.addEventListener('click', () => toggleSidebar(false));
+        els.overlay.addEventListener('click', () => toggleSidebar(false));
+        els.backHomeBtn.addEventListener('click', showHome);
+
+        els.languageSelect.addEventListener('change', (e) => {
+            if (typeof i18n !== 'undefined') i18n.setLanguage(e.target.value);
         });
-        elements.searchInput.addEventListener('input', () => {
-            if (elements.searchInput.value.trim()) {
-                showSearchHistory();
-            } else {
+
+        els.downloadBtn.addEventListener('click', showDownloadModal);
+        els.closeModal.addEventListener('click', hideDownloadModal);
+        els.downloadWindows.addEventListener('click', downloadWindowsVersion);
+        els.downloadAndroid.addEventListener('click', downloadAndroidVersion);
+        els.addIOS.addEventListener('click', downloadIOSVersion);
+
+        els.searchBtn.addEventListener('click', performSearch);
+        els.searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
                 hideSearchHistory();
+                performSearch();
             }
         });
-        elements.searchInput.addEventListener('focus', () => {
-            if (elements.searchInput.value.trim()) showSearchHistory();
+        els.searchInput.addEventListener('input', () => {
+            updateSearchClear();
+            if (els.searchInput.value.trim()) showSearchHistory();
+            else hideSearchHistory();
         });
-        elements.searchInput.addEventListener('blur', () => {
+        els.searchInput.addEventListener('focus', () => {
+            if (els.searchInput.value.trim()) showSearchHistory();
+        });
+        els.searchInput.addEventListener('blur', () => {
             setTimeout(hideSearchHistory, 200);
         });
-        elements.downloadBtn.addEventListener('click', showDownloadModal);
-        elements.closeModal.addEventListener('click', hideDownloadModal);
-        elements.downloadWindows.addEventListener('click', downloadWindowsVersion);
-        elements.downloadAndroid.addEventListener('click', downloadAndroidVersion);
-        elements.addIOS.addEventListener('click', downloadIOSVersion);
-        elements.prevBtn.addEventListener('click', showPrevImage);
-        elements.nextBtn.addEventListener('click', showNextImage);
-        elements.closeViewerBtn.addEventListener('click', closeImageViewer);
-        elements.imageViewer.addEventListener('click', (e) => {
-            if (e.target === elements.imageViewer) closeImageViewer();
+        els.searchClear.addEventListener('click', clearSearchInput);
+
+        els.prevBtn.addEventListener('click', showPrevImage);
+        els.nextBtn.addEventListener('click', showNextImage);
+        els.closeViewerBtn.addEventListener('click', closeImageViewer);
+        els.imageViewer.addEventListener('click', (e) => {
+            if (e.target === els.imageViewer || e.target.classList.contains('image-viewer-backdrop')) {
+                closeImageViewer();
+            }
         });
-        
+        els.viewerImage.addEventListener('load', () => els.viewerImage.classList.add('loaded'));
+
+        els.backToTop.addEventListener('click', () => {
+            els.contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        els.contentArea.addEventListener('scroll', updateBackToTop, { passive: true });
+
+        // 点击侧边栏外部关闭侧边栏（overlay 已设为 pointer-events:none）
+        document.addEventListener('click', (e) => {
+            if (!els.sidebar.classList.contains('visible')) return;
+            if (els.sidebar.contains(e.target)) return;
+            if (els.categoryBtn.contains(e.target)) return;
+            toggleSidebar(false);
+        });
+
         document.addEventListener('keydown', (e) => {
-            if (elements.imageViewer.classList.contains('visible')) {
+            if (els.imageViewer.classList.contains('visible')) {
                 if (e.key === 'ArrowLeft') showPrevImage();
                 else if (e.key === 'ArrowRight') showNextImage();
                 else if (e.key === 'Escape') closeImageViewer();
             } else if (e.key === 'Escape') {
-                if (elements.downloadModal.classList.contains('show')) hideDownloadModal();
+                if (els.downloadModal.classList.contains('show')) hideDownloadModal();
+                else if (els.sidebar.classList.contains('visible')) toggleSidebar(false);
                 else showHome();
             }
         });
+
+        // 全局点击涟漪
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.toolbar-btn, .btn, .list-item, .subcategory-item');
+            if (!btn) return;
+            createRipple(e, btn);
+        });
     }
-    
+
+    function createRipple(e, el) {
+        const rect = el.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.cssText = `
+            position: absolute;
+            left: ${e.clientX - rect.left - size / 2}px;
+            top: ${e.clientY - rect.top - size / 2}px;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: rgba(33, 150, 243, 0.18);
+            transform: scale(0);
+            animation: rippleEffect 0.55s ease-out;
+            pointer-events: none;
+        `;
+        el.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    }
+
+    // 注入涟漪动画关键帧
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes rippleEffect {
+            to { transform: scale(2.5); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // ==================== Canvas 粒子背景 ====================
+    function initCanvasBackground() {
+        const canvas = els.bgCanvas;
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let animationId;
+        let isActive = true;
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            createParticles();
+        }
+
+        function createParticles() {
+            const isMobile = width < 768;
+            const density = isMobile ? 32000 : 18000;
+            const maxCount = isMobile ? 30 : 70;
+            const count = Math.min(Math.floor((width * height) / density), maxCount);
+            particles = [];
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.6,
+                    vy: (Math.random() - 0.5) * 0.6,
+                    radius: Math.random() * 2.5 + 1,
+                    alpha: Math.random() * 0.4 + 0.2
+                });
+            }
+        }
+
+        function draw() {
+            if (!isActive) return;
+            ctx.clearRect(0, 0, width, height);
+            const isDark = state.darkMode;
+            const colorBase = isDark ? '160, 180, 220' : '33, 150, 243';
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${colorBase}, ${p.alpha})`;
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const q = particles[j];
+                    const dx = p.x - q.x;
+                    const dy = p.y - q.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 130) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(q.x, q.y);
+                        ctx.strokeStyle = `rgba(${colorBase}, ${0.12 * (1 - dist / 130)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+            animationId = requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize, { passive: true });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                isActive = false;
+                cancelAnimationFrame(animationId);
+            } else {
+                isActive = true;
+                draw();
+            }
+        });
+
+        resize();
+        draw();
+    }
+
+    // ==================== 启动 ====================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
