@@ -531,7 +531,7 @@
     }
 
     function downloadAndroidVersion() {
-        triggerDownload('https://raw.githubusercontent.com/jiyuli666/lxhpy/main/%E7%BD%97%E5%B0%8F%E9%BB%91%E8%BE%9F%E8%B0%A3%E6%9F%A5%E8%AF%A2.apk', '罗小黑辟谣查询.apk');
+        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/apk/lxhpy.apk', 'lxhpy.apk');
         hideDownloadModal();
     }
 
