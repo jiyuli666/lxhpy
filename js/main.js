@@ -1,7 +1,5 @@
 /**
  * 罗小黑战记辟谣查询工具 - 重构版主程序
- * 版本: 2.0.0
- * 特性: 现代化UI、玻璃拟态、粒子背景、交互动画、多语言
  */
 
 (function() {
@@ -526,17 +524,17 @@
     }
 
     function downloadWindowsVersion() {
-        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.4.0-win64.exe', 'LuoXiaoHeiChecker-1.4.0-win64.exe');
+        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.5.0-win64.exe', 'LuoXiaoHeiChecker-1.5.0-win64.exe');
         hideDownloadModal();
     }
 
     function downloadAndroidVersion() {
-        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/apk/lxhpy.apk', 'lxhpy.apk');
+        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/lxh/lxhpy.apk', 'lxhpy.apk');
         hideDownloadModal();
     }
 
     function downloadIOSVersion() {
-        showToast(t('open_in_browser'));
+        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHei.ipa', 'LuoXiaoHei.ipa');
         hideDownloadModal();
     }
 
