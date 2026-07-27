@@ -1,6 +1,6 @@
 import UIKit
 
-// MARK: - 设置视图
+// MARK: - 设置视图（已移除软件更新等iOS不可用功能）
 public final class SettingsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private let languageNames = [
@@ -28,7 +28,7 @@ public final class SettingsViewController: UIViewController, UITableViewDataSour
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -37,7 +37,7 @@ public final class SettingsViewController: UIViewController, UITableViewDataSour
 
     // MARK: - Table
     public func numberOfSections(in tableView: UITableView) -> Int {
-        return 5 // 语言、外观、动画、历史、关于（协议内嵌到关于里或另加 1 节）
+        return 4 // 语言、外观、动画、历史记录、关于
     }
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -45,7 +45,7 @@ public final class SettingsViewController: UIViewController, UITableViewDataSour
         case 0: return languageCodes.count
         case 1: return 1
         case 2: return 1
-        case 3: return 1
+        case 3: return 1 // 清空历史
         case 4: return 3 // 关于 + 用户协议 + 隐私政策
         default: return 0
         }
@@ -109,7 +109,7 @@ public final class SettingsViewController: UIViewController, UITableViewDataSour
             let cell = UITableViewCell(style: .value1, reuseIdentifier: "AboutCell")
             if indexPath.row == 0 {
                 cell.textLabel?.text = loc("current_version")
-                cell.detailTextLabel?.text = "v1.3.4"
+                cell.detailTextLabel?.text = "v1.5.1"
                 cell.selectionStyle = .none
             } else if indexPath.row == 1 {
                 cell.textLabel?.text = loc("user_agreement")
@@ -139,11 +139,16 @@ public final class SettingsViewController: UIViewController, UITableViewDataSour
             RumorDataStore.shared.reload()
             NotificationCenter.default.post(name: .languageDidChange, object: nil)
             tableView.reloadData()
-            // 语言变化会导致布局重新渲染，直接 pop 到首页最稳妥
             navigationController?.popToRootViewController(animated: true)
         case 3:
-            ConfigManager.shared.clearSearchHistory()
-            showToast(message: loc("history_cleared"))
+            let alert = UIAlertController(title: loc("tip"), message: loc("clear_history_confirm"), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: loc("cancel"), style: .cancel))
+            alert.addAction(UIAlertAction(title: loc("confirm"), style: .destructive, handler: { [weak self] _ in
+                ConfigManager.shared.clearSearchHistory()
+                self?.showToast(message: loc("history_cleared"))
+                NotificationCenter.default.post(name: .themeDidChange, object: nil)
+            }))
+            present(alert, animated: true)
         case 4:
             if indexPath.row == 1 {
                 let vc = TextDocumentViewController(filename: "user_agreement.md",
@@ -159,13 +164,11 @@ public final class SettingsViewController: UIViewController, UITableViewDataSour
     }
 
     private func applyThemeGlobally() {
-        // 在 Playground 中不使用 UIApplication.shared，而是通过导航控制器递归应用主题
         let style: UIUserInterfaceStyle = ThemeManager.shared.isDark ? .dark : .light
         navigationController?.overrideUserInterfaceStyle = style
         view.window?.overrideUserInterfaceStyle = style
         view.backgroundColor = ThemeManager.shared.background
         tableView.reloadData()
-        // 发送通知让其他页面也同步
         NotificationCenter.default.post(name: .themeDidChange, object: nil)
     }
 

@@ -1,6 +1,6 @@
 import UIKit
 
-// MARK: - 分类列表（竖屏优化）
+// MARK: - 分类列表
 public final class CategoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let category: String
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -20,14 +20,15 @@ public final class CategoryListViewController: UIViewController, UITableViewData
 
         tableView.dataSource = self
         tableView.delegate = self
+        // 不 register — cellForRowAt 中按需创建 cell
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 64
+        tableView.estimatedRowHeight = 56
         tableView.backgroundColor = .clear
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -45,7 +46,6 @@ public final class CategoryListViewController: UIViewController, UITableViewData
         cell.textLabel?.text = item.title
         cell.textLabel?.numberOfLines = 0
         cell.textLabel?.textColor = ThemeManager.shared.text
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 16)
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = ThemeManager.shared.surface
         return cell

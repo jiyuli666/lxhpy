@@ -23,7 +23,7 @@ public final class SearchResultsViewController: UIViewController, UITableViewDat
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 64
+        tableView.estimatedRowHeight = 56
         tableView.backgroundColor = .clear
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
@@ -34,7 +34,6 @@ public final class SearchResultsViewController: UIViewController, UITableViewDat
             emptyLabel.textColor = ThemeManager.shared.secondaryText
             emptyLabel.textAlignment = .center
             emptyLabel.numberOfLines = 0
-            emptyLabel.font = UIFont.systemFont(ofSize: 16)
             emptyLabel.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(emptyLabel)
             NSLayoutConstraint.activate([
@@ -47,7 +46,7 @@ public final class SearchResultsViewController: UIViewController, UITableViewDat
         }
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -65,7 +64,6 @@ public final class SearchResultsViewController: UIViewController, UITableViewDat
         cell.textLabel?.text = item.title
         cell.textLabel?.numberOfLines = 0
         cell.textLabel?.textColor = ThemeManager.shared.text
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 16)
         cell.detailTextLabel?.text = item.category
         cell.detailTextLabel?.textColor = ThemeManager.shared.secondaryText
         cell.accessoryType = .disclosureIndicator

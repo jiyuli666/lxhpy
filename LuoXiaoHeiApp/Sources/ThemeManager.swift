@@ -8,7 +8,7 @@ import UIKit
         return ConfigManager.shared.config.darkMode
     }
 
-    // 颜色 - 罗小黑战记主题色（橙色系）
+    // 颜色
     public var background: UIColor {
         return UIColor { trait in
             self.isDark ? UIColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1)
@@ -45,7 +45,7 @@ import UIKit
     }
 
     public var accent: UIColor {
-        return UIColor.systemOrange // 罗小黑主题橙色
+        return UIColor.systemOrange
     }
 
     public var primaryButton: UIColor {

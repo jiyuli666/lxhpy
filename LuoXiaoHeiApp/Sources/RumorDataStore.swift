@@ -46,7 +46,6 @@ public final class RumorDataStore {
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String: String]]
         else { return }
 
-        // 保持JSON中的分类顺序
         for (cat, dict) in json {
             categories.append(cat)
             var list: [RumorItem] = []
@@ -55,8 +54,8 @@ public final class RumorDataStore {
                 list.append(item)
                 allItems.append(item)
             }
-            // 保持JSON中的原始顺序（不按字母排序，以匹配py4版本）
-            itemsByCategory[cat] = list
+            // 按标题稳定排序以便 UI 显示有序
+            itemsByCategory[cat] = list.sorted { $0.title < $1.title }
         }
     }
 

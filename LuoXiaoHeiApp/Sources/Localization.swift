@@ -63,6 +63,8 @@ public final class Localization {
             "export_success": "导出成功",
             "about_software": "关于本软件",
             "current_version": "当前版本",
+            "check_update": "检查更新",
+            "auto_check_update": "自动检测更新",
             "user_agreement_text_start": "使用本软件默认同意我们的",
             "user_agreement_title": "《用户协议》",
             "and": "和",
@@ -80,10 +82,7 @@ public final class Localization {
             "success": "成功",
             "error": "错误",
             "view_images": "查看相关图片",
-            "no_related_images": "当前内容没有相关图片",
-            "related_images": "相关图片 ({count})",
-            "prev_image": "上一张",
-            "next_image": "下一张"
+            "no_related_images": "当前内容没有相关图片"
         ]
     }
 

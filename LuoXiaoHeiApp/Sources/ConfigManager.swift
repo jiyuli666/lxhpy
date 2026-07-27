@@ -7,6 +7,7 @@ public struct AppConfig: Codable {
     public var darkMode: Bool
     public var exportLocation: String
     public var animationEnabled: Bool
+    public var autoCheckUpdate: Bool
     public var startupCount: Int
     public var searchHistory: [String]
 
@@ -15,6 +16,7 @@ public struct AppConfig: Codable {
         darkMode: false,
         exportLocation: "",
         animationEnabled: true,
+        autoCheckUpdate: true,
         startupCount: 0,
         searchHistory: []
     )
@@ -23,8 +25,8 @@ public struct AppConfig: Codable {
 public final class ConfigManager {
     public static let shared = ConfigManager()
 
-    private let defaultsKey = "lxhpy_config_v2"
-    private let historyKey = "lxhpy_history_v2"
+    private let defaultsKey = "lxhpy_config_v1"
+    private let historyKey = "lxhpy_history_v1"
 
     public private(set) var config: AppConfig
 
@@ -63,6 +65,11 @@ public final class ConfigManager {
 
     public func setAnimationEnabled(_ on: Bool) {
         config.animationEnabled = on
+        save()
+    }
+
+    public func setAutoCheckUpdate(_ on: Bool) {
+        config.autoCheckUpdate = on
         save()
     }
 

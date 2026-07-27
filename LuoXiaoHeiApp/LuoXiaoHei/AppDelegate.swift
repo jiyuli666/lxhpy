@@ -11,19 +11,19 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // 初始化应用层数据
         _ = ConfigManager.shared
         Localization.shared.load(language: ConfigManager.shared.config.language)
-        _ = RumorDataStore.shared
+        RumorDataStore.shared.reload()
 
         // 创建主窗口
         let window = UIWindow(frame: UIScreen.main.bounds)
-        window.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
+        window.backgroundColor = ThemeManager.shared.background
 
         // 用 UINavigationController 包装 HomeViewController
         let home = HomeViewController()
         let nav = UINavigationController(rootViewController: home)
-        nav.navigationBar.tintColor = UIColor.systemOrange
-        nav.navigationBar.barTintColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
-        nav.navigationBar.isTranslucent = false
-        nav.view.backgroundColor = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
+        nav.navigationBar.prefersLargeTitles = true
+        nav.navigationBar.tintColor = ThemeManager.shared.accent
+        nav.overrideUserInterfaceStyle = ThemeManager.shared.isDark ? .dark : .light
+        nav.view.backgroundColor = ThemeManager.shared.background
 
         window.rootViewController = nav
         window.makeKeyAndVisible()

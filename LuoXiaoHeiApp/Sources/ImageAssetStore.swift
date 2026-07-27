@@ -98,34 +98,24 @@ public final class ThumbnailCell: UICollectionViewCell {
     }
 }
 
-// MARK: - 图片全屏查看控制器（支持多张图片切换）
+// MARK: - 图片全屏查看控制器
 public final class ImageViewerViewController: UIViewController, UIScrollViewDelegate {
     private let scrollView = UIScrollView()
     private let imageView = UIImageView()
-    private let images: [UIImage]
-    private var currentIndex: Int
-    private var pageControl: UIPageControl?
-    private var counterLabel: UILabel?
 
-    public init(images: [UIImage], startIndex: Int = 0, title: String?) {
-        self.images = images
-        self.currentIndex = max(0, min(startIndex, images.count - 1))
+    public init(image: UIImage, title: String?) {
         super.init(nibName: nil, bundle: nil)
-        imageView.image = images.isEmpty ? nil : images[self.currentIndex]
+        imageView.image = image
         imageView.contentMode = .scaleAspectFit
         self.title = title
-    }
-
-    public convenience init(image: UIImage, title: String?) {
-        self.init(images: [image], startIndex: 0, title: title)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
     public override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
-        overrideUserInterfaceStyle = .dark
+        view.backgroundColor = ThemeManager.shared.background
+        overrideUserInterfaceStyle = ThemeManager.shared.isDark ? .dark : .light
 
         scrollView.delegate = self
         scrollView.minimumZoomScale = 1.0
@@ -154,66 +144,10 @@ public final class ImageViewerViewController: UIViewController, UIScrollViewDele
         doubleTap.numberOfTapsRequired = 2
         view.addGestureRecognizer(doubleTap)
 
-        // 如果有多张图片，添加滑动切换和指示器
-        if images.count > 1 {
-            setupMultiImageControls()
-        }
-
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .action,
             target: self, action: #selector(onShare)
         )
-    }
-
-    private func setupMultiImageControls() {
-        // 添加左右滑动手势
-        let leftSwipe = UISwipeGestureRecognizer(target: self, action: #selector(onSwipe(_:)))
-        leftSwipe.direction = .left
-        view.addGestureRecognizer(leftSwipe)
-
-        let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(onSwipe(_:)))
-        rightSwipe.direction = .right
-        view.addGestureRecognizer(rightSwipe)
-
-        // 计数器标签
-        let label = UILabel()
-        label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        label.textAlignment = .center
-        label.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        label.layer.cornerRadius = 12
-        label.clipsToBounds = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(label)
-        counterLabel = label
-
-        NSLayoutConstraint.activate([
-            label.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            label.widthAnchor.constraint(greaterThanOrEqualToConstant: 80),
-            label.heightAnchor.constraint(equalToConstant: 32)
-        ])
-
-        updateCounter()
-    }
-
-    private func updateCounter() {
-        counterLabel?.text = "  \(currentIndex + 1) / \(images.count)  "
-    }
-
-    @objc private func onSwipe(_ gesture: UISwipeGestureRecognizer) {
-        if gesture.direction == .left && currentIndex < images.count - 1 {
-            currentIndex += 1
-        } else if gesture.direction == .right && currentIndex > 0 {
-            currentIndex -= 1
-        } else {
-            return
-        }
-        UIView.transition(with: imageView, duration: 0.25, options: .transitionCrossDissolve, animations: {
-            self.imageView.image = self.images[self.currentIndex]
-        }, completion: nil)
-        scrollView.setZoomScale(1.0, animated: true)
-        updateCounter()
     }
 
     public func viewForZooming(in scrollView: UIScrollView) -> UIView? {

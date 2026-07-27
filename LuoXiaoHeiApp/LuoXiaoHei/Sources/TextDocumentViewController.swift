@@ -29,7 +29,7 @@ public final class TextDocumentViewController: UIViewController {
         view.addSubview(textView)
 
         NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: view.topAnchor),
+            textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             textView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             textView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             textView.bottomAnchor.constraint(equalTo: view.bottomAnchor)

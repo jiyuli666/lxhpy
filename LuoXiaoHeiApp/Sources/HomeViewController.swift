@@ -1,14 +1,11 @@
 import UIKit
 
-// MARK: - 主页视图控制器（竖屏优化）
+// MARK: - 主页视图控制器
 public final class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
 
-    private let scrollView = UIScrollView()
-    private let contentStack = UIStackView()
     private let titleLabel = UILabel()
     private let searchBar = UISearchBar()
     private let historyLabel = UILabel()
-    private let historyScrollView = UIScrollView()
     private let historyStack = UIStackView()
     private let homeTextLabel = UILabel()
     private let categoryTable = UITableView(frame: .zero, style: .insetGrouped)
@@ -41,77 +38,44 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
     private func setupViews() {
         view.backgroundColor = ThemeManager.shared.background
 
-        // 滚动容器
-        scrollView.showsVerticalScrollIndicator = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(scrollView)
-
-        contentStack.axis = .vertical
-        contentStack.spacing = 8
-        contentStack.alignment = .fill
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentStack)
-
-        // 标题
         titleLabel.text = loc("app_title")
-        titleLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+        titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         titleLabel.textAlignment = .center
-        titleLabel.numberOfLines = 0
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(titleLabel)
 
-        // 搜索栏
         searchBar.placeholder = loc("search_placeholder")
         searchBar.searchBarStyle = .minimal
         searchBar.delegate = self
         searchBar.returnKeyType = .search
         searchBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(searchBar)
 
-        // 搜索历史标题
         historyLabel.text = loc("search_history")
         historyLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         historyLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(historyLabel)
 
-        // 历史标签横向滚动
-        historyScrollView.showsHorizontalScrollIndicator = false
-        historyScrollView.translatesAutoresizingMaskIntoConstraints = false
         historyStack.axis = .horizontal
-        historyStack.alignment = .center
+        historyStack.alignment = .leading
         historyStack.spacing = 8
         historyStack.translatesAutoresizingMaskIntoConstraints = false
-        historyScrollView.addSubview(historyStack)
+        view.addSubview(historyStack)
 
-        // 欢迎文字
         homeTextLabel.text = loc("home_text")
         homeTextLabel.font = UIFont.systemFont(ofSize: 15)
         homeTextLabel.textAlignment = .center
         homeTextLabel.numberOfLines = 0
         homeTextLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(homeTextLabel)
 
-        // 分类表格（不滚动，由外层scrollView处理）
         categoryTable.dataSource = self
         categoryTable.delegate = self
         categoryTable.rowHeight = UITableView.automaticDimension
         categoryTable.estimatedRowHeight = 56
         categoryTable.backgroundColor = .clear
-        categoryTable.isScrollEnabled = false
         categoryTable.translatesAutoresizingMaskIntoConstraints = false
-
-        // 添加到stack
-        contentStack.addArrangedSubview(titleLabel)
-        contentStack.addArrangedSubview(searchBar)
-        contentStack.addArrangedSubview(historyLabel)
-        contentStack.addArrangedSubview(historyScrollView)
-        contentStack.addArrangedSubview(homeTextLabel)
-        contentStack.addArrangedSubview(categoryTable)
-
-        // 设置边距
-        contentStack.isLayoutMarginsRelativeArrangement = true
-        contentStack.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
-        contentStack.setCustomSpacing(12, after: titleLabel)
-        contentStack.setCustomSpacing(8, after: searchBar)
-        contentStack.setCustomSpacing(8, after: historyLabel)
-        contentStack.setCustomSpacing(16, after: historyScrollView)
-        contentStack.setCustomSpacing(16, after: homeTextLabel)
+        view.addSubview(categoryTable)
 
         // 导航栏按钮
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -131,24 +95,29 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
-            contentStack.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            searchBar.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
 
-            historyScrollView.heightAnchor.constraint(equalToConstant: 36),
+            historyLabel.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
+            historyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
 
-            historyStack.topAnchor.constraint(equalTo: historyScrollView.topAnchor),
-            historyStack.leadingAnchor.constraint(equalTo: historyScrollView.leadingAnchor),
-            historyStack.trailingAnchor.constraint(equalTo: historyScrollView.trailingAnchor),
-            historyStack.bottomAnchor.constraint(equalTo: historyScrollView.bottomAnchor),
-            historyStack.heightAnchor.constraint(equalTo: historyScrollView.heightAnchor)
+            historyStack.topAnchor.constraint(equalTo: historyLabel.bottomAnchor, constant: 8),
+            historyStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            historyStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+
+            homeTextLabel.topAnchor.constraint(equalTo: historyStack.bottomAnchor, constant: 16),
+            homeTextLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            homeTextLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+
+            categoryTable.topAnchor.constraint(equalTo: homeTextLabel.bottomAnchor, constant: 16),
+            categoryTable.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            categoryTable.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            categoryTable.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
 
@@ -168,19 +137,8 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
         refreshHistory()
     }
 
-    public override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        categoryTable.layoutIfNeeded()
-        let height = categoryTable.contentSize.height
-        categoryTable.constraints.first(where: { $0.firstAttribute == .height })?.constant = height
-        if !categoryTable.constraints.contains(where: { $0.firstAttribute == .height }) {
-            categoryTable.heightAnchor.constraint(equalToConstant: height).isActive = true
-        }
-    }
-
     public func reloadData() {
         categoryTable.reloadData()
-        view.setNeedsLayout()
         refreshHistory()
     }
 
@@ -190,13 +148,7 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
             sub.removeFromSuperview()
         }
         let history = ConfigManager.shared.config.searchHistory
-        guard !history.isEmpty else {
-            historyScrollView.isHidden = true
-            historyLabel.isHidden = true
-            return
-        }
-        historyScrollView.isHidden = false
-        historyLabel.isHidden = false
+        guard !history.isEmpty else { return }
         for keyword in history {
             let btn = UIButton(type: .system)
             btn.setTitle(keyword, for: .normal)
@@ -210,6 +162,9 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
             }, for: .touchUpInside)
             historyStack.addArrangedSubview(btn)
         }
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.fittingSizeLevel, for: .horizontal)
+        historyStack.addArrangedSubview(spacer)
     }
 
     // MARK: - Search Bar
@@ -277,7 +232,6 @@ public final class HomeViewController: UIViewController, UITableViewDataSource, 
         let cat = RumorDataStore.shared.categories[indexPath.row]
         cell.textLabel?.text = cat
         cell.textLabel?.textColor = ThemeManager.shared.text
-        cell.textLabel?.numberOfLines = 0
         cell.detailTextLabel?.text = "\(RumorDataStore.shared.items(in: cat).count) \(loc("rumor_detail"))"
         cell.detailTextLabel?.textColor = ThemeManager.shared.secondaryText
         cell.accessoryType = .disclosureIndicator
