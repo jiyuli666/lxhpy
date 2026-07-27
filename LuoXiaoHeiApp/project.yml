@@ -7,7 +7,6 @@ options:
   projectFormat: xcode13
 settings:
   base:
-    SWIFT_VERSION: "5.0"
     CODE_SIGN_STYLE: Automatic
     CODE_SIGNING_ALLOWED: NO
     CODE_SIGNING_REQUIRED: NO
@@ -16,7 +15,13 @@ settings:
     INFOPLIST_KEY_CFBundleDisplayName: 罗小黑战记辟谣查询
     INFOPLIST_KEY_CFBundleName: 罗小黑战记
     TARGETED_DEVICE_FAMILY: "1,2"
-    DEVELOPMENT_ASSET_PATHS: '"LuoXiaoHei/Preview Content"'
+  configs:
+    Debug:
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+      SWIFT_COMPILATION_MODE: "singlefile"
+    Release:
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
+      SWIFT_COMPILATION_MODE: "wholemodule"
 targets:
   LuoXiaoHei:
     type: application
@@ -28,7 +33,6 @@ targets:
       - path: LuoXiaoHei/Resources
       - path: LuoXiaoHei/Assets.xcassets
       - path: LuoXiaoHei/Base.lproj/LaunchScreen.storyboard
-      - path: LuoXiaoHei/Preview Content
     info:
       path: LuoXiaoHei/Info.plist
       properties:

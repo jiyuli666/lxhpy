@@ -37,7 +37,7 @@ public final class SettingsViewController: UIViewController, UITableViewDataSour
 
     // MARK: - Table
     public func numberOfSections(in tableView: UITableView) -> Int {
-        return 4 // 语言、外观、动画、历史记录、关于
+        return 5
     }
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

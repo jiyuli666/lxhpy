@@ -83,7 +83,10 @@ public final class Localization {
             "no_related_images": "当前内容没有相关图片",
             "related_images": "相关图片 ({count})",
             "prev_image": "上一张",
-            "next_image": "下一张"
+            "next_image": "下一张",
+            "clear_history_confirm": "确定要清空所有搜索历史吗？",
+            "cancel": "取消",
+            "confirm": "确定"
         ]
     }
 

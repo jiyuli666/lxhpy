@@ -1,6 +1,6 @@
 import UIKit
 
-@main
+@UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
