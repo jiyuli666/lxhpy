@@ -88,9 +88,44 @@ jobs:
             build \
             ONLY_ACTIVE_ARCH=NO \
             -derivedDataPath "$PWD/DerivedData" \
-            2>&1 | tee build.log | tail -40
+            2>&1 | tee build.log
           echo ""
           echo "构建完成，退出码: ${PIPESTATUS[0]}"
+        continue-on-error: true
+
+      - name: Step 4.1 - 显示构建错误（如果有）
+        if: always()
+        run: |
+          if [ -f build.log ]; then
+            echo "========== 所有 error: 行 =========="
+            grep -n "error:" build.log || echo "没有找到 error: 行"
+            echo ""
+            echo "========== 所有 warning: 行（前30条） =========="
+            grep -n "warning:" build.log | head -30 || echo "没有找到 warning: 行"
+            echo ""
+            echo "========== build.log 最后 80 行 =========="
+            tail -80 build.log
+          else
+            echo "build.log 不存在"
+          fi
+
+      - name: Step 4.2 - 检查构建是否成功
+        id: build_check
+        run: |
+          if [ -f build.log ]; then
+            if grep -q "BUILD SUCCEEDED" build.log; then
+              echo "result=success" >> $GITHUB_OUTPUT
+              echo "✅ 构建成功"
+            else
+              echo "result=failed" >> $GITHUB_OUTPUT
+              echo "❌ 构建失败"
+              exit 1
+            fi
+          else
+            echo "result=failed" >> $GITHUB_OUTPUT
+            echo "❌ build.log 不存在"
+            exit 1
+          fi
 
       # === 关键修复：手动把 Resources 目录的文件 + 图标文件复制进 .app 包 ===
       - name: Step 4.5 - 手动复制资源文件和图标到 app bundle
@@ -208,7 +243,8 @@ jobs:
 
       - name: 失败时上传构建日志
         if: failure()
-        run: |
-          echo "构建失败，检查 DerivedData..."
-          ls -la LuoXiaoHeiApp/DerivedData/Build/Products/Release-iphoneos/ 2>/dev/null || echo "路径不存在"
-        working-directory: .
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: LuoXiaoHeiApp/build.log
+          retention-days: 7
