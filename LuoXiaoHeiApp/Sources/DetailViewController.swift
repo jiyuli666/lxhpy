@@ -1,6 +1,6 @@
 import UIKit
 
-// MARK: - 辟谣详情（支持图片缩略图与全屏查看）
+// MARK: - 辟谣详情（支持图片缩略图与全屏查看，竖屏优化）
 public final class DetailViewController: UIViewController,
                                           UITableViewDataSource,
                                           UITableViewDelegate {
@@ -52,7 +52,7 @@ public final class DetailViewController: UIViewController,
         tableView.separatorStyle = .none
         tableView.allowsSelection = true
         tableView.backgroundColor = .clear
-        tableView.estimatedRowHeight = 64
+        tableView.estimatedRowHeight = 80
         tableView.rowHeight = UITableView.automaticDimension
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
@@ -110,7 +110,7 @@ public final class DetailViewController: UIViewController,
             toolbarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             toolbarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             toolbarView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            toolbarView.heightAnchor.constraint(equalToConstant: 96)
+            toolbarView.heightAnchor.constraint(equalToConstant: 88)
         ])
     }
 
@@ -133,7 +133,6 @@ public final class DetailViewController: UIViewController,
         // 计算逻辑 row（考虑图片缺失时的折叠）
         let logicalRow: Row
         if images.isEmpty {
-            // rows: 0=title, 1=category, 2=content
             logicalRow = [Row.title, Row.category, Row.content][indexPath.row]
         } else {
             logicalRow = Row(rawValue: indexPath.row) ?? Row.content
@@ -147,7 +146,7 @@ public final class DetailViewController: UIViewController,
             let lbl = cell.contentView.subviews.first as? UILabel ?? {
                 let l = UILabel()
                 l.numberOfLines = 0
-                l.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+                l.font = UIFont.systemFont(ofSize: 20, weight: .bold)
                 l.textColor = ThemeManager.shared.text
                 l.translatesAutoresizingMaskIntoConstraints = false
                 cell.contentView.addSubview(l)
@@ -214,15 +213,8 @@ public final class DetailViewController: UIViewController,
             cell.selectionStyle = .none
             cell.configure(with: images) { [weak self] index in
                 guard let self = self, index < self.images.count else { return }
-                let viewer = ImageViewerViewController(image: self.images[index], title: self.item.title)
+                let viewer = ImageViewerViewController(images: self.images, startIndex: index, title: self.item.title)
                 self.navigationController?.pushViewController(viewer, animated: true)
-            }
-            // 约束布局
-            if cell.superview != nil {
-                cell.collectionView.translatesAutoresizingMaskIntoConstraints = false
-                if cell.collectionView.superview == cell.contentView && cell.collectionView.constraints.isEmpty {
-                    // no-op
-                }
             }
             return cell
 
@@ -310,8 +302,8 @@ public final class ImageGridCell: UITableViewCell,
 
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = 6
-        layout.minimumLineSpacing = 6
+        layout.minimumInteritemSpacing = 8
+        layout.minimumLineSpacing = 8
         layout.sectionInset = UIEdgeInsets(top: 4, left: 16, bottom: 12, right: 16)
         self.collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -328,7 +320,6 @@ public final class ImageGridCell: UITableViewCell,
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            collectionView.heightAnchor.constraint(equalToConstant: 120)
         ])
     }
 
@@ -337,17 +328,17 @@ public final class ImageGridCell: UITableViewCell,
     public func configure(with images: [UIImage], onTap: @escaping (Int) -> Void) {
         self.images = images
         self.onTap = onTap
-        // 根据图片数量动态调整高度
-        let perRow: Int = 3
-        let rows = max(1, (images.count + perRow - 1) / perRow)
-        let cellHeight: CGFloat = 110
-        let lineSpacing: CGFloat = 6
+        // 根据图片数量动态调整高度（竖屏适配：每行2张图片）
+        let perRow: CGFloat = 2
+        let rows = max(1, ceil(CGFloat(images.count) / perRow))
+        let cellWidth = (UIScreen.main.bounds.width - 16*2 - 8) / perRow
+        let cellHeight: CGFloat = cellWidth * 0.75 // 4:3 比例
+        let lineSpacing: CGFloat = 8
         let insetTop: CGFloat = 4, insetBottom: CGFloat = 12
-        let total = insetTop + CGFloat(rows) * cellHeight + CGFloat(rows - 1) * lineSpacing + insetBottom
+        let total = insetTop + rows * cellHeight + (rows - 1) * lineSpacing + insetBottom
         // 更新 height 约束
-        if let hc = collectionView.constraints.first(where: { $0.firstAttribute == .height }) {
-            hc.constant = total
-        }
+        collectionView.constraints.filter { $0.firstAttribute == .height }.forEach { $0.isActive = false }
+        collectionView.heightAnchor.constraint(equalToConstant: total).isActive = true
         collectionView.reloadData()
     }
 
@@ -372,8 +363,8 @@ public final class ImageGridCell: UITableViewCell,
     public func collectionView(_ collectionView: UICollectionView,
                                layout collectionViewLayout: UICollectionViewLayout,
                                sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let total = collectionView.bounds.width - 16 * 2 - 6 * 2
-        let w = max(60, floor(total / 3))
-        return CGSize(width: w, height: 110)
+        let total = collectionView.bounds.width - 16 * 2 - 8
+        let w = max(80, floor(total / 2))
+        return CGSize(width: w, height: w * 0.75)
     }
 }
