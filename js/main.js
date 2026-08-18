@@ -525,7 +525,7 @@
     }
 
     function downloadWindowsVersion() {
-        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.5.1-win64.exe', 'LuoXiaoHeiChecker-1.5.1-win64.exe');
+        triggerDownload('https://github.com/jiyuli666/lxhpy/releases/download/lxh/LuoXiaoHeiChecker-1.5.2-win64.exe', 'LuoXiaoHeiChecker-1.5.2-win64.exe');
         hideDownloadModal();
     }
 
