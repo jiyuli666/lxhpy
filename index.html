@@ -2,174 +2,300 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="description" content="罗小黑战记辟谣查询工具 - 提供罗小黑战记、制作团队及关联作品相关谣言的分类查询、关键词检索、辟谣内容复制等服务">
-    <meta name="keywords" content="罗小黑战记,辟谣,查询,工具,MTJJ,寒木春华">
-
+    <meta name="description" content="罗小黑战记辟谣查询工具 - 服务迁移通知">
+    <meta name="robots" content="noindex, nofollow">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="罗小黑辟谣">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <title>罗小黑战记辟谣查询 · 服务迁移</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg2: #f5f5f7;
+            --surface: #ffffff;
+            --text: #1d1d1f;
+            --text2: #6e6e73;
+            --text3: #86868b;
+            --line: #e8e8ed;
+            --brand: #0071e3;
+            --brand2: #0077ed;
+            --brand-soft: rgba(0, 113, 227, .09);
+            --shadow-md: 0 2px 6px rgba(0, 0, 0, .05), 0 6px 16px -6px rgba(0, 0, 0, .06);
+            --shadow-lg: 0 24px 60px -18px rgba(0, 0, 0, .18);
+            --ease: cubic-bezier(.25, .1, .25, 1);
+            --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: var(--font); background: var(--bg); color: var(--text);
+            -webkit-font-smoothing: antialiased; overflow: hidden;
+            display: flex; flex-direction: column;
+            transition: background .3s var(--ease), color .3s var(--ease);
+        }
+        /* 暗色模式（与主站保持一致） */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0b0b0d; --bg2: #161617; --surface: #1c1c1e;
+                --text: #f5f5f7; --text2: #a1a1a6; --text3: #86868b;
+                --line: #2c2c2e;
+                --brand: #2997ff; --brand2: #339dff;
+                --brand-soft: rgba(41, 151, 255, .16);
+                --shadow-lg: 0 24px 60px -18px rgba(0, 0, 0, .7);
+                --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, .5), 0 2px 6px -2px rgba(0, 0, 0, .4);
+            }
+            .aura { opacity: .28; }
+            .topbar { background: rgba(0, 0, 0, .78); border-color: #2c2c2e; }
+        }
+        /* 氛围光晕（克制的苹果蓝） */
+        .aura { position: fixed; pointer-events: none; z-index: 0; border-radius: 50%; filter: blur(90px); opacity: .5; }
+        .aura-a { background: radial-gradient(circle, rgba(0,113,227,.16), rgba(0,113,227,0) 68%); width: 620px; height: 620px; top: -220px; left: -120px; animation: drift 20s ease-in-out infinite alternate; }
+        .aura-b { background: radial-gradient(circle, rgba(41,151,255,.12), rgba(41,151,255,0) 68%); width: 540px; height: 540px; top: 30%; right: -180px; animation: drift 24s ease-in-out infinite alternate-reverse; }
+        @keyframes drift { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(40px,34px,0) scale(1.1); } }
 
-    <title>罗小黑战记辟谣查询</title>
-    <link rel="stylesheet" href="css/style.css?v=5">
+        /* 顶栏 */
+        .topbar {
+            position: relative; z-index: 2; height: 60px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+            background: rgba(255,255,255,.8); backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid var(--line);
+        }
+        .brand-name { font-size: 15px; font-weight: 650; letter-spacing: -.2px; white-space: nowrap; }
+        .lang-select {
+            appearance: none; -webkit-appearance: none;
+            height: 36px; padding: 0 30px 0 12px;
+            border: 1px solid var(--line); border-radius: 9px;
+            background-color: var(--bg-card, #ffffff);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 9px center;
+            color: var(--text2); font-size: 13.5px; font-weight: 500;
+            font-family: inherit; outline: none; cursor: pointer;
+            transition: border-color .15s var(--ease), box-shadow .2s var(--ease), color .15s var(--ease);
+        }
+        .lang-select:hover { border-color: var(--text3); color: var(--text); }
+        .lang-select:focus { border-color: var(--brand); color: var(--text); box-shadow: 0 0 0 3px var(--brand-soft); }
+        @media (prefers-color-scheme: dark) { .lang-select { background-color: #1c1c1e; } }
+
+        /* 主区 */
+        .wrap { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .card { width: min(540px, 100%); text-align: center; padding: 8px 24px 24px; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 12.5px; font-weight: 700; letter-spacing: .5px;
+            color: var(--brand); background: var(--brand-soft); padding: 8px 15px; border-radius: 999px;
+            animation: pop .6s var(--ease) both;
+        }
+        .badge .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); animation: blink 1.6s ease-in-out infinite; }
+        @keyframes blink { 0%,100% { opacity: 1; transform: scale(1);} 50% { opacity: .35; transform: scale(.7);} }
+        h1 { margin-top: 24px; font-size: clamp(24px, 5.5vw, 40px); font-weight: 700; letter-spacing: -.03em; line-height: 1.15; color: var(--text); }
+        h1 .accent { color: var(--brand); }
+        .desc { margin-top: 16px; font-size: 15.5px; line-height: 1.8; color: var(--text2); }
+
+        .url-box {
+            margin: 28px auto 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: var(--bg2); border: 1px solid var(--line); border-radius: 14px;
+            padding: 15px 18px; max-width: 100%;
+        }
+        .url-box .link { font-size: 16px; font-weight: 700; color: var(--brand); letter-spacing: .3px; }
+        .url-box svg { color: var(--brand); flex-shrink: 0; }
+
+        .actions { margin-top: 30px; display: flex; flex-direction: column; gap: 14px; }
+        .btn-primary {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            height: 54px; width: 100%; border-radius: 15px; border: none; cursor: pointer;
+            background: var(--brand); color: #fff;
+            font-size: 16px; font-weight: 650; font-family: inherit;
+            box-shadow: 0 10px 24px -8px rgba(0, 113, 227, .5);
+            transition: transform .16s var(--ease), filter .18s, box-shadow .2s;
+        }
+        .btn-primary:hover { background: var(--brand2); box-shadow: 0 14px 30px -8px rgba(0, 113, 227, .6); }
+        .btn-primary:active { transform: scale(.97); }
+        .btn-ghost { border: none; background: none; color: var(--text3); font-size: 13.5px; cursor: pointer; font-family: inherit; transition: color .15s; }
+        .btn-ghost:hover { color: var(--text); }
+
+        /* 动画 */
+        .card { animation: rise .7s var(--ease) both; }
+        @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger { opacity: 0; animation: rise .7s var(--ease) forwards; }
+        .s1 { animation-delay: .12s; } .s2 { animation-delay: .22s; } .s3 { animation-delay: .32s; } .s4 { animation-delay: .42s; }
+        @keyframes pop { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+        .float { animation: floaty 4s ease-in-out infinite; }
+        @keyframes floaty { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-7px);} }
+
+        @media (max-width: 520px) {
+            .card { padding: 8px 8px 24px; }
+            .topbar { height: 54px; padding: 0 14px; }
+            .brand-name { font-size: 13.5px; max-width: 45vw; overflow: hidden; text-overflow: ellipsis; }
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; } }
+    </style>
 </head>
 <body>
-    <!-- 动态背景 -->
-    <canvas id="bgCanvas" class="bg-canvas" aria-hidden="true"></canvas>
-    <div class="ambient-light" aria-hidden="true"></div>
-    <div class="ambient-light alt" aria-hidden="true"></div>
+    <div class="aura aura-a" aria-hidden="true"></div>
+    <div class="aura aura-b" aria-hidden="true"></div>
 
-    <!-- 顶部工具栏 -->
-    <header class="app-toolbar" id="appToolbar">
-        <div class="toolbar-left">
-            <button class="toolbar-btn icon-btn" id="categoryBtn" aria-label="打开分类菜单" title="分类">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                    <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
-                </svg>
-            </button>
-            <div class="brand-mini">
-                <span class="brand-icon"></span>
-                <span data-i18n="app_title">罗小黑战记辟谣查询</span>
-            </div>
-        </div>
-        <div class="toolbar-right">
-            <button class="toolbar-btn theme-toggle" id="darkModeBtn" aria-label="切换深色模式">
-                <span class="theme-icon sun">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 7a5 5 0 100 10 5 5 0 000-10zM2 13h2a1 1 0 100-2H2a1 1 0 100 2zm18 0h2a1 1 0 100-2h-2a1 1 0 100 2zM11 2v2a1 1 0 102 0V2a1 1 0 10-2 0zm0 18v2a1 1 0 102 0v-2a1 1 0 10-2 0zM5.99 4.58a1 1 0 10-1.41 1.41l1.41 1.41a1 1 0 101.41-1.41L5.99 4.58zm12.37 12.37a1 1 0 10-1.41 1.41l1.41 1.41a1 1 0 101.41-1.41l-1.41-1.41zm1.41-10.96a1 1 0 10-1.41-1.41l-1.41 1.41a1 1 0 101.41 1.41l1.41-1.41zM7.4 17.01a1 1 0 10-1.41-1.41l-1.41 1.41a1 1 0 101.41 1.41l1.41-1.41z"/></svg>
-                </span>
-                <span class="theme-icon moon">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
-                </span>
-            </button>
-            <div class="lang-select-wrap">
-                <select id="languageSelect" class="language-select" aria-label="选择语言">
-                    <option value="zh_cn">简体中文</option>
-                    <option value="zh_tw">繁體中文</option>
-                    <option value="en_gb">English</option>
-                    <option value="ja">日本語</option>
-                    <option value="ko">한국어</option>
-                    <option value="ru">Русский</option>
-                </select>
-            </div>
-            <button class="toolbar-btn download-btn" id="downloadBtn" aria-label="下载客户端">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                <span data-i18n="download_client">下载客户端</span>
-            </button>
-        </div>
+    <header class="topbar">
+        <span class="brand-name" data-i18n="brand">罗小黑战记辟谣查询</span>
+        <select id="languageSelect" class="lang-select" aria-label="选择语言">
+            <option value="zh_cn">简体中文</option>
+            <option value="zh_tw">繁體中文</option>
+            <option value="en_gb">English</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="ru">Русский</option>
+            <option value="es">Español</option>
+            <option value="pt">Português</option>
+        </select>
     </header>
 
-    <!-- 遮罩层 -->
-    <div class="overlay" id="overlay" aria-hidden="true"></div>
+    <main class="wrap">
+        <div class="card">
+            <span class="badge stagger s1"><span class="pulse"></span><span data-i18n="badge">站点服务已迁移</span></span>
+            <h1 class="stagger s2" data-i18n-html="title_html">感谢支持，我们<span class="accent">搬家了</span></h1>
+            <p class="desc stagger s3" data-i18n-html="desc_html">旧的访问地址已停止服务。<br>罗小黑战记辟谣查询工具现已迁移至全新网址，<br>所有功能、数据与多语言支持均已完整保留。</p>
 
-    <div class="app-body">
-        <!-- 侧边栏 -->
-        <aside class="sidebar" id="sidebar" aria-label="分类菜单" aria-hidden="true">
-            <div class="sidebar-header">
-                <span data-i18n="all_categories">全部分类</span>
-                <button class="close-sidebar" id="closeSidebar" aria-label="关闭分类菜单">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                </button>
+            <div class="url-box stagger s3 float">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M13.5 3.8a4.5 4.5 0 016.4.1 4.5 4.5 0 010 6.4l-3 3a4.5 4.5 0 01-6.4.1 1 1 0 111.4-1.4 2.5 2.5 0 003.6 0l3-3a2.5 2.5 0 000-3.6 2.5 2.5 0 00-3.6 0L10 8.2A1 1 0 118.6 6.8l2.9-2.9.1-.1zM4.1 19.9a4.5 4.5 0 010-6.4l3-3a4.5 4.5 0 016.4 0 1 1 0 01-1.4 1.4 2.5 2.5 0 00-3.6 0l-3 3a2.5 2.5 0 000 3.6 2.5 2.5 0 003.6 0l2.9-2.9a1 1 0 111.4 1.4l-2.9 2.9a4.5 4.5 0 01-6.4 0z"/></svg>
+                <span class="link" id="newSite">lxhpy.pages.dev</span>
             </div>
-            <div class="category-container" id="categoryContainer"></div>
-        </aside>
 
-        <!-- 主内容区 -->
-        <main class="content-area" id="contentArea">
-            <!-- 首页 -->
-            <section class="hero-section" id="heroSection">
-                <div class="hero-content">
-                    <h1 class="hero-title" id="heroTitle" data-i18n="app_title">罗小黑战记辟谣查询</h1>
-                    <p class="hero-subtitle" id="heroSubtitle" data-i18n="hero_subtitle">输入关键词，快速查找相关辟谣内容</p>
-
-                    <div class="search-box" id="searchBox">
-                        <div class="search-inner">
-                            <svg class="search-icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 001.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 00-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 005.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                            <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="输入关键词搜索" aria-label="搜索关键词" autocomplete="off">
-                            <button class="search-clear" id="searchClear" aria-label="清空搜索">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                            </button>
-                            <button class="search-submit" id="searchBtn" data-i18n-title="search" aria-label="搜索">搜索</button>
-                        </div>
-                        <div class="search-history" id="searchHistory"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 结果区域 -->
-            <section class="result-section" id="resultSection" aria-label="搜索结果">
-                <div class="result-header">
-                    <button class="btn btn-ghost back-home-btn" id="backHomeBtn">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                        <span data-i18n="back_to_home">返回主页</span>
-                    </button>
-                    <div class="result-meta" id="resultMeta"></div>
-                </div>
-                <div class="result-box" id="resultBox"></div>
-            </section>
-        </main>
-    </div>
-
-    <!-- 下载平台选择弹窗 -->
-    <div class="modal" id="downloadModal" role="dialog" aria-modal="true" aria-labelledby="downloadModalTitle">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="downloadModalTitle" data-i18n="select_platform">选择下载平台</h3>
-                <button class="modal-close" id="closeModal" aria-label="关闭">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <button class="platform-btn windows" id="downloadWindows">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M3 12V6.75l6-1.32v6.48L3 12zm17-9v8.75l-10 .15V5.21L20 3zM3 13l6 .09v6.81l-6-1.15V13zm17 .25V22l-10-1.91V13.1l10 .15z"/></svg>
-                    <span data-i18n="download_windows">下载Windows版本</span>
-                </button>
-                <button class="platform-btn android" id="downloadAndroid">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0225 3.503C15.5902 8.4791 13.853 8.0281 12 8.0281c-1.853 0-3.5902.451-5.1369 1.2443L4.8406 5.7692a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589.3432 18.6617h23.3136c0-4.0028-2.3457-7.475-5.775-9.3403"/></svg>
-                    <span data-i18n="download_android">下载Android版本</span>
-                </button>
-                <button class="platform-btn ios" id="addIOS">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                    <span data-i18n="download_ios">下载iOS版本</span>
-                </button>
+            <div class="actions stagger s4">
+                <button class="btn-primary" id="goBtn"><span data-i18n="go">前往新网站</span><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></button>
+                <button class="btn-ghost" id="openHere" data-i18n="stay">留在本页</button>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- 图片查看器 -->
-    <div class="image-viewer" id="imageViewer" role="dialog" aria-modal="true" aria-label="图片查看器">
-        <div class="image-viewer-backdrop"></div>
-        <div class="image-viewer-content">
-            <button class="viewer-btn close-btn" id="closeViewerBtn" aria-label="关闭">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-            <button class="viewer-btn nav-btn prev-btn" id="prevBtn" aria-label="上一张">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-            </button>
-            <div class="viewer-image-wrap">
-                <img id="viewerImage" src="" alt="图片">
-            </div>
-            <button class="viewer-btn nav-btn next-btn" id="nextBtn" aria-label="下一张">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-            </button>
-            <div class="image-count" id="imageCount">1/1</div>
-        </div>
-    </div>
+    <script>
+        var I18N = {
+            dict: {
+                'zh_cn': {
+                    brand: '罗小黑战记辟谣查询',
+                    badge: '站点服务已迁移',
+                    title_html: '感谢支持，我们<span class="accent">搬家了</span>',
+                    desc_html: '旧的访问地址已停止服务。<br>罗小黑战记辟谣查询工具现已迁移至全新网址，<br>所有功能、数据与多语言支持均已完整保留。',
+                    go: '前往新网站',
+                    stay: '留在本页'
+                },
+                'zh_tw': {
+                    brand: '羅小黑戰記闢謠查詢',
+                    badge: '網站服務已遷移',
+                    title_html: '感謝支持，我們<span class="accent">搬家了</span>',
+                    desc_html: '舊的訪問地址已停止服務。<br>羅小黑戰記闢謠查詢工具現已遷移至全新網址，<br>所有功能、數據與多語言支持均已完整保留。',
+                    go: '前往新網站',
+                    stay: '留在本頁'
+                },
+                'en_gb': {
+                    brand: 'Luo Xiaohei Rumor Checker',
+                    badge: 'Service has moved',
+                    title_html: 'Thank you — we have <span class="accent">moved</span>',
+                    desc_html: 'The old address is no longer in service.<br>Luo Xiaohei Rumor Checker has moved to a brand-new URL,<br>with all features, data and multilingual support fully preserved.',
+                    go: 'Visit new website',
+                    stay: 'Stay on this page'
+                },
+                'ja': {
+                    brand: '羅小黒戰記デマ検証ツール',
+                    badge: 'サービスは移転しました',
+                    title_html: 'ご支援ありがとうございます。私たちは<span class="accent">移転しました</span>',
+                    desc_html: '旧アドレスでのサービスは終了しました。<br>羅小黒戰記デマ検証ツールは新URLへ移転し、<br>すべての機能・データ・多言語対応はそのまま引き継がれています。',
+                    go: '新サイトへ',
+                    stay: 'このページに留まる'
+                },
+                'ko': {
+                    brand: '나소흑전기 루머 검증 도구',
+                    badge: '서비스가 이전되었습니다',
+                    title_html: '지원해 주셔서 감사합니다. 저희는 <span class="accent">이전했습니다</span>',
+                    desc_html: '이전 주소는 더 이상 서비스되지 않습니다.<br>나소흑전기 루머 검증 도구는 새로운 주소로 이전했으며,<br>모든 기능·데이터·다국어 지원이 그대로 유지됩니다.',
+                    go: '새 사이트로 이동',
+                    stay: '이 페이지에 머물기'
+                },
+                'ru': {
+                    brand: 'Проверка слухов про Ло Сяохэя',
+                    badge: 'Служба перенесена',
+                    title_html: 'Спасибо за поддержку — мы <span class="accent">переехали</span>',
+                    desc_html: 'Старый адрес больше не обслуживается.<br>Инструмент проверки слухов теперь доступен по новому адресу,<br>все функции, данные и поддержка языков полностью сохранены.',
+                    go: 'Перейти на новый сайт',
+                    stay: 'Остаться на странице'
+                },
+                'es': {
+                    brand: 'Verificador de rumores de Luo Xiaohei',
+                    badge: 'Servicio migrado',
+                    title_html: 'Gracias por tu apoyo — nos hemos <span class="accent">mudado</span>',
+                    desc_html: 'La antigua dirección ha dejado de estar en servicio.<br>El verificador de rumores se ha mudado a una nueva URL,<br>con todas las funciones, datos y soporte multilingüe intactos.',
+                    go: 'Ir al nuevo sitio',
+                    stay: 'Permanecer en esta página'
+                },
+                'pt': {
+                    brand: 'Verificador de rumores de Luo Xiaohei',
+                    badge: 'Serviço migrado',
+                    title_html: 'Obrigado pelo apoio — mudamos de <span class="accent">endereço</span>',
+                    desc_html: 'O endereço antigo deixou de funcionar.<br>O verificador de rumores mudou para um novo endereço,<br>com todos os recursos, dados e suporte multilíngue preservados.',
+                    go: 'Ir para o novo site',
+                    stay: 'Permanecer nesta página'
+                }
+            },
+            lang: 'zh_cn',
+            detect: function () {
+                var saved = null;
+                try { saved = localStorage.getItem('lxhpy_stop_lang'); } catch (e) {}
+                if (saved && this.dict[saved]) return saved;
+                var bl = (navigator.language || 'zh-CN').toLowerCase();
+                if (bl.indexOf('zh-hant') > -1 || bl.indexOf('zh-tw') > -1) return 'zh_tw';
+                if (bl.indexOf('zh') > -1) return 'zh_cn';
+                if (bl.indexOf('en') > -1) return 'en_gb';
+                if (bl.indexOf('ja') > -1) return 'ja';
+                if (bl.indexOf('ko') > -1) return 'ko';
+                if (bl.indexOf('ru') > -1) return 'ru';
+                if (bl.indexOf('pt') > -1) return 'pt';
+                if (bl.indexOf('es') > -1) return 'es';
+                return 'zh_cn';
+            },
+            apply: function () {
+                var self = this, t = this.dict[this.lang];
+                document.querySelectorAll('[data-i18n]').forEach(function (el) {
+                    el.textContent = t[el.getAttribute('data-i18n')];
+                });
+                document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+                    el.innerHTML = t[el.getAttribute('data-i18n-html')];
+                });
+                var sel = document.getElementById('languageSelect');
+                if (sel) sel.value = self.lang;
+                document.title = t.brand + ' · 服务迁移';
+            },
+            init: function () {
+                var self = this;
+                this.lang = this.detect();
+                this.apply();
+                var sel = document.getElementById('languageSelect');
+                if (sel) {
+                    sel.addEventListener('change', function () {
+                        self.lang = sel.value;
+                        try { localStorage.setItem('lxhpy_stop_lang', self.lang); } catch (e) {}
+                        self.apply();
+                    });
+                }
+            }
+        };
+        I18N.init();
+    </script>
 
-    <!-- Toast 提示 -->
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-    <!-- 返回顶部 -->
-    <button class="back-to-top" id="backToTop" aria-label="返回顶部">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
-    </button>
-
-    <script src="js/rumor_data_all.js?v=2"></script>
-    <script src="js/i18n.js?v=2"></script>
-    <script src="js/main.js?v=8"></script>
+    <script>
+        const NEW_URL = 'https://lxhpy.pages.dev/';
+        var go = document.getElementById('goBtn');
+        var here = document.getElementById('openHere');
+        go.addEventListener('click', function () {
+            go.disabled = true;
+            go.style.opacity = '.7';
+            window.location.href = NEW_URL;
+        });
+        here.addEventListener('click', function () { window.close(); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') go.click();
+        });
+    </script>
 </body>
 </html>
